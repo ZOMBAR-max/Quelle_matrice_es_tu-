@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quelle matrice es-tu ?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- En-tête épuré -->
+    <header class="w-full py-5 px-6 border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-2xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <span class="text-lg font-bold font-mono">M</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-lg tracking-tight text-white">Quelle matrice es-tu ?</h1>
+                </div>
+            </div>
+            <div id="progress-indicator" class="hidden text-xs font-mono text-indigo-400 bg-indigo-950/60 px-3 py-1.5 rounded-full border border-indigo-800/40">
+                Question <span id="current-step-num">1</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteneur Principal -->
+    <main class="w-full max-w-2xl mx-auto px-4 py-8 flex-grow flex flex-col justify-center">
+
+        <!-- Écran d'accueil -->
+        <div id="welcome-screen" class="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-xl text-center fade-in">
+            <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-3xl">
+                📐
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-bold mb-4 tracking-tight">Quelle matrice es-tu ?</h2>
+            <p class="text-slate-400 text-sm sm:text-base mb-8 leading-relaxed max-w-md mx-auto">
+                Réponds honnêtement à cette série de questions en arborescence pour déterminer ta véritable nature algébrique.
+            </p>
+            <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
+                Commencer le test
+            </button>
+        </div>
+
+        <!-- Conteneur des Questions -->
+        <div id="quiz-container" class="hidden bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl fade-in">
+            
+            <!-- Barre de progression fluide -->
+            <div class="w-full bg-slate-800 h-1.5 rounded-full mb-7 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-violet-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+
+            <!-- Intitulé de la question (sans badge ni méta-indication) -->
+            <div class="mb-6">
+                <h3 id="question-text" class="text-lg sm:text-xl font-semibold text-white leading-snug">Chargement...</h3>
+                <p id="question-hint" class="hidden text-xs text-slate-400 mt-1.5">Plusieurs réponses possibles</p>
+            </div>
+
+            <!-- Options de réponses -->
+            <div id="options-container" class="space-y-3 mb-8">
+                <!-- Généré dynamiquement en JS -->
+            </div>
+
+            <!-- Navigation bas de question -->
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                <button id="prev-btn" onclick="prevQuestion()" class="px-4 py-2.5 text-sm text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                    ← Précédent
+                </button>
+                <button id="next-btn" onclick="handleNext()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl shadow-md shadow-indigo-600/20 transition-all">
+                    Suivant →
+                </button>
+            </div>
+        </div>
+
+        <!-- Écran de Résultat -->
+        <div id="result-screen" class="hidden bg-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-xl text-center fade-in">
+            <div id="result-icon" class="w-20 h-20 mx-auto mb-6 rounded-3xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-4xl shadow-xl">
+                ✨
+            </div>
+            <p class="text-xs uppercase tracking-widest text-indigo-400 font-mono mb-2">Résultat de l'analyse</p>
+            <h3 id="result-title" class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Matrice Carrée</h3>
+            <p id="result-desc" class="text-slate-300 text-sm sm:text-base mb-8 leading-relaxed max-w-lg mx-auto">
+                Description du profil matriciel...
+            </p>
+
+            <!-- Statistiques finales -->
+            <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8 p-4 bg-slate-950/60 rounded-2xl border border-slate-800/80">
+                <div class="text-center p-3 rounded-xl bg-indigo-950/30 border border-indigo-900/30">
+                    <span class="block text-xs uppercase tracking-wider text-indigo-400 font-mono mb-1">Carré 🔲</span>
+                    <span id="score-carre-val" class="text-2xl font-bold font-mono text-white">0</span>
+                </div>
+                <div class="text-center p-3 rounded-xl bg-violet-950/30 border border-violet-900/30">
+                    <span class="block text-xs uppercase tracking-wider text-violet-400 font-mono mb-1">Quelconque 🔺</span>
+                    <span id="score-triangle-val" class="text-2xl font-bold font-mono text-white">0</span>
+                </div>
+            </div>
+
+            <button onclick="restartQuiz()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all">
+                Recommencer le test
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Pied de page -->
+    <footer class="w-full py-5 text-center text-xs text-slate-600 border-t border-slate-900/80">
+        <p>Test de personnalité matricielle</p>
+    </footer>
+
+    <script>
+        // Base de données des questions : toutes les sous-questions sont aplaties en questions normales et fluides
+        const questions = [
+            // --- TRONC COMMUN INITIAL ---
+            {
+                id: "q1",
+                text: "J'ai déjà possédé un hand-spinner :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 1 }
+                ],
+                next: "q2"
+            },
+            {
+                id: "q2",
+                text: "J'ai déjà été collé :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q3"
+            },
+            {
+                id: "q3",
+                text: "Quand ça parle politique :",
+                type: "single",
+                options: [
+                    { label: "Je parle pas puisque j'ai pas d'avis", carre: 2, triangle: 0 },
+                    { label: "Je parle pas puisque j'ai pas envie", carre: 0, triangle: 0 },
+                    { label: "Je m'exprime", carre: 0, triangle: 1 }
+                ],
+                next: "q4"
+            },
+            {
+                id: "q4",
+                text: "J'aime les pieds :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0, next: "q32_pieds" },
+                    { label: "Non", carre: 0, triangle: 0, next: "q5" }
+                ]
+            },
+            {
+                id: "q5",
+                text: "J'ai déjà embrassé quelqu'un :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q6"
+            },
+            {
+                id: "q6",
+                text: "J'ai déjà consommé de l'alcool :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 1 }
+                ],
+                next: "q7"
+            },
+            {
+                id: "q7",
+                text: "J'ai déjà pratiqué du sport en club :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q8"
+            },
+            {
+                id: "q8",
+                text: "J'ai déjà regardé du porno :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 2 }
+                ],
+                next: "q9"
+            },
+            {
+                id: "q9",
+                text: "Le plot twist de Shutter Island était :",
+                type: "single",
+                options: [
+                    { label: "Excellent", carre: 2, triangle: 0 },
+                    { label: "Bon", carre: 1, triangle: 0 },
+                    { label: "OK / Meh", carre: 0, triangle: 1 },
+                    { label: "Pas vu", carre: 0, triangle: 0 }
+                ],
+                next: "q10"
+            },
+            {
+                id: "q10",
+                text: "Interstellar est :",
+                type: "single",
+                options: [
+                    { label: "Très bon", carre: 1, triangle: 0 },
+                    { label: "Bon", carre: 0, triangle: 1 },
+                    { label: "Pas très bon", carre: 1, triangle: 0 },
+                    { label: "Pas vu", carre: 0, triangle: 0 }
+                ],
+                next: "q11"
+            },
+            {
+                id: "q11",
+                text: "Je m'intéresse au moins à 1 art :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0, next: "q12" },
+                    { label: "Non", carre: 2, triangle: 0, next: "q16" }
+                ]
+            },
+            {
+                id: "q12",
+                text: "Lequel ?",
+                type: "multiple",
+                options: [
+                    { label: "Peinture", carre: 0, triangle: 1, key: "peinture" },
+                    { label: "Sculpture", carre: 0, triangle: 3, key: "sculpture" },
+                    { label: "Théâtre", carre: 0, triangle: 2, key: "theatre" },
+                    { label: "Animation", carre: 0, triangle: 1, key: "animation" },
+                    { label: "Cinéma", carre: 0, triangle: 1, key: "cinema" },
+                    { label: "Littérature", carre: 0, triangle: 1, key: "litterature" },
+                    { label: "Musique", carre: 0, triangle: 0, key: "musique" },
+                    { label: "Jeux vidéo", carre: 0, triangle: 0, key: "jeuxvideo" }
+                ],
+                next: "dynamic_art"
+            },
+
+            // --- QUESTIONS MUSIQUE (Aplaties, sans en-tête spécial) ---
+            {
+                id: "q13_1",
+                text: "J'ai déjà dit « j'écoute de tout » :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q13_2"
+            },
+            {
+                id: "q13_2",
+                text: "Quand je veux découvrir un artiste j'écoute :",
+                type: "single",
+                options: [
+                    { label: "Ses top titres", carre: 2, triangle: 0 },
+                    { label: "Ses albums", carre: 0, triangle: 1 }
+                ],
+                next: "q13_3"
+            },
+            {
+                id: "q13_3",
+                text: "J'écoute en majorité du rap :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 3, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q13_4"
+            },
+            {
+                id: "q13_4",
+                text: "Taylor Swift m'inspire :",
+                type: "single",
+                options: [
+                    { label: "De la bonne musique", carre: 1, triangle: 0 },
+                    { label: "Du blanc de poulet sans sauce sans sel", carre: 0, triangle: 0 }
+                ],
+                next: "q13_5"
+            },
+            {
+                id: "q13_5",
+                text: "Parmi : Jazz, électro, disco, house, rock des années 60, j'écoute activement :",
+                type: "single",
+                options: [
+                    { label: "0", carre: 2, triangle: 0 },
+                    { label: "1", carre: 0, triangle: 1 },
+                    { label: "2 ou 3", carre: 0, triangle: 2 },
+                    { label: "+3", carre: 0, triangle: 3 }
+                ],
+                next: "after_music"
+            },
+
+            // --- QUESTIONS JEUX VIDÉO (Aplaties, avec calcul silencieux du bonus "aucun coché") ---
+            {
+                id: "q14_1",
+                text: "Combien de genres de jeux vidéo m'intéressent ?",
+                type: "single",
+                options: [
+                    { label: "1 ou 2", carre: 2, triangle: 0, gamingPositive: true },
+                    { label: "Plus de 2", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "q14_2"
+            },
+            {
+                id: "q14_2",
+                text: "Je joue activement à LoL / Valo / Fortnite :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 2, triangle: 0, gamingPositive: true },
+                    { label: "Non", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "q14_3"
+            },
+            {
+                id: "q14_3",
+                text: "L'open world est sans débat le meilleur genre :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0, gamingPositive: true },
+                    { label: "Non", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "q14_4"
+            },
+            {
+                id: "q14_4",
+                text: "J'ai déjà qualifié un jeu de « Metroidvania » uniquement puisque j'y faisais des allers-retours :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0, gamingPositive: true },
+                    { label: "Non", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "q14_5"
+            },
+            {
+                id: "q14_5",
+                text: "Je n'ai pas compris la question précédente :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0, gamingPositive: true },
+                    { label: "Non", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "after_gaming"
+            },
+
+            // --- QUESTIONS CINÉMA (Aplaties) ---
+            {
+                id: "q15_1",
+                text: "Mon top 3 réalisateurs contient Tarantino / Spielberg ou Nolan :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 2, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q15_2"
+            },
+            {
+                id: "q15_2",
+                text: "J'ai déjà regardé un film d'un réalisateur soviétique / asiatique / africain / allemand :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q15_3"
+            },
+            {
+                id: "q15_3",
+                text: "Je sais ce qu'est l'effet Vertigo :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q16"
+            },
+
+            // --- SUITE DU TRONC COMMUN ---
+            {
+                id: "q16",
+                text: "J'ai déjà dit le N-word sans être noir :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q17"
+            },
+            {
+                id: "q17",
+                text: "J'adore aller au Loft / Plouf / Azar :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 2, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q18"
+            },
+            {
+                id: "q18",
+                text: "La shatta est la meilleure musique de boîte :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q19"
+            },
+            {
+                id: "q19",
+                text: "Je maîtrise 1 ou plusieurs danses :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q20"
+            },
+            {
+                id: "q20",
+                text: "Mon goût de glace préféré c'est :",
+                type: "single",
+                options: [
+                    { label: "Chocolat / vanille / noisette", carre: 1, triangle: 0 },
+                    { label: "Pistache / menthe / fraise / framboise", carre: 0, triangle: 1 },
+                    { label: "Autre", carre: 0, triangle: 0 }
+                ],
+                next: "q21"
+            },
+            {
+                id: "q21",
+                text: "Je pense bien m'habiller (sans prétention) :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0, next: "q22_1" },
+                    { label: "Non / je ne sais pas", carre: 2, triangle: 0, next: "q23" }
+                ]
+            },
+
+            // --- QUESTIONS STYLE VESTIMENTAIRE (Aplaties, sans "Si oui :") ---
+            {
+                id: "q22_1",
+                text: "Je consomme des marques comme Pull and Bear / Adidas / Bershka / Nike :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 2, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q22_2"
+            },
+            {
+                id: "q22_2",
+                text: "On m'a déjà demandé si j'étais gay à cause de ma qualité vestimentaire :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 2 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q22_3"
+            },
+            {
+                id: "q22_3",
+                text: "Dans ma garde-robe, on peut trouver + de 5 couleurs différentes (blanc, noir et couleurs trop proches exclues) :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q22_4"
+            },
+            {
+                id: "q22_4",
+                text: "Je possède et porte régulièrement des chaussures autres que des sneakers :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q23"
+            },
+
+            // --- FIN DU TRONC COMMUN ---
+            {
+                id: "q23",
+                text: "Je suis cisgenre :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 4 }
+                ],
+                next: "q24"
+            },
+            {
+                id: "q24",
+                text: "Je suis hétéro :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 2 }
+                ],
+                next: "q25"
+            },
+            {
+                id: "q25",
+                text: "Je me coupe les cheveux moi-même (ou par un pote) :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 2 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q26"
+            },
+            {
+                id: "q26",
+                text: "J'ai déjà minoré un DS :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 3, next: "q27" },
+                    { label: "Non", carre: 0, triangle: 0, next: "q28" }
+                ]
+            },
+            {
+                id: "q27",
+                text: "C'était français / anglais ?",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q28"
+            },
+            {
+                id: "q28",
+                text: "J'ai envie d'uriner à l'after sur les quais :",
+                type: "single",
+                options: [
+                    { label: "Je me retiens", carre: 1, triangle: 0 },
+                    { label: "Je me mets à l'écart et pisse contre un mur", carre: 0, triangle: 0 },
+                    { label: "Je pisse dans la Saône", carre: 0, triangle: 1 }
+                ],
+                next: "q29"
+            },
+            {
+                id: "q29",
+                text: "J'ai déjà possédé des lunettes aviateur :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q30"
+            },
+            {
+                id: "q30",
+                text: "J'ai :",
+                type: "single",
+                options: [
+                    { label: "Le permis", carre: 0, triangle: 0 },
+                    { label: "Le code", carre: 0, triangle: 1 },
+                    { label: "Aucun", carre: 0, triangle: 0 }
+                ],
+                next: "q31"
+            },
+            {
+                id: "q31",
+                text: "En cours :",
+                type: "single",
+                options: [
+                    { label: "Je me tais et me morfonds dans mon ennui", carre: 0, triangle: 0 },
+                    { label: "Il peut m'arriver de converser", carre: 0, triangle: 1 },
+                    { label: "Je passe le cours à lutter contre le rire pour ne pas me faire enculer", carre: 0, triangle: 2 }
+                ],
+                // IMPORTANT : Si l'utilisateur a dit "Non" à Q4 (les pieds), on saute directement à Q33 !
+                next: "q33"
+            },
+            {
+                id: "q32_pieds",
+                text: "Concernant les pieds :",
+                type: "single",
+                options: [
+                    { label: "Je l'assume", action: "instant_qcq" },
+                    { label: "Je ne l'assume pas", carre: 0, triangle: 10, next: "q5" }
+                ]
+            },
+            {
+                id: "q33",
+                text: "Je joue d'un instrument :",
+                type: "single",
+                options: [
+                    { label: "Guitare", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 1, triangle: 0 },
+                    { label: "Piano", carre: 0, triangle: 1 },
+                    { label: "Autre", carre: 0, triangle: 2 }
+                ],
+                next: "finish"
+            }
+        ];
+
+        // Indexation rapide des questions par ID
+        const questionById = {};
+        questions.forEach(q => { questionById[q.id] = q; });
+
+        // État complet du parcours (pile d'historique pour un bouton Précédent 100% fiable)
+        let historyStack = [];
+        let currentQuestionId = "q1";
+
+        function createInitialState() {
+            return {
+                carre: 0,
+                triangle: 0,
+                selectedArts: [], // ['musique', 'jeuxvideo', 'cinema']
+                gamingAnyPositive: false // Suit si au moins une question JV a donné des points positifs
+            };
+        }
+
+        let currentState = createInitialState();
+
+        function startQuiz() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('progress-indicator').classList.remove('hidden');
+
+            currentState = createInitialState();
+            historyStack = [];
+            currentQuestionId = "q1";
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questionById[currentQuestionId];
+            if (!q) {
+                finishQuiz();
+                return;
+            }
+
+            // Mise à jour fluide du compteur et de la barre de progression
+            const stepCount = historyStack.length + 1;
+            document.getElementById('current-step-num').textContent = stepCount;
+            const estimatedTotal = 32;
+            const progressPct = Math.min(96, Math.round((stepCount / estimatedTotal) * 100));
+            document.getElementById('progress-bar').style.width = progressPct + '%';
+
+            // Affichage du texte brut de la question (aucune méta-information)
+            document.getElementById('question-text').textContent = q.text;
+            
+            const hintEl = document.getElementById('question-hint');
+            if (q.type === "multiple") {
+                hintEl.classList.remove('hidden');
+            } else {
+                hintEl.classList.add('hidden');
+            }
+
+            // Génération des options (aucune valeur chiffrée affichée)
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 cursor-pointer transition-all duration-150 group select-none";
+                
+                const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
+                const inputName = `input_${q.id}`;
+
+                label.innerHTML = `
+                    <input type="${inputType}" name="${inputName}" value="${idx}" class="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700 focus:ring-indigo-500 focus:ring-offset-slate-900">
+                    <span class="ml-3.5 text-sm sm:text-base text-slate-200 group-hover:text-white font-medium">${opt.label}</span>
+                `;
+                container.appendChild(label);
+            });
+
+            document.getElementById('prev-btn').disabled = (historyStack.length === 0);
+        }
+
+        function handleNext() {
+            const q = questionById[currentQuestionId];
+            if (!q) return;
+
+            // Clonage de l'état avant modification pour permettre le retour en arrière parfait
+            const previousSnapshot = {
+                questionId: currentQuestionId,
+                state: JSON.parse(JSON.stringify(currentState))
+            };
+
+            if (q.type === 'single') {
+                const selectedRadio = document.querySelector(`input[name="input_${q.id}"]:checked`);
+                if (!selectedRadio) {
+                    showNotification("Sélectionne une réponse pour continuer.");
+                    return;
+                }
+
+                const optIndex = parseInt(selectedRadio.value, 10);
+                const chosenOption = q.options[optIndex];
+
+                // Ajout silencieux des points
+                if (chosenOption.carre) currentState.carre += chosenOption.carre;
+                if (chosenOption.triangle) currentState.triangle += chosenOption.triangle;
+
+                // Suivi silencieux des questions Jeux Vidéo pour la règle "aucun point coché = +2 triangle"
+                if (q.id.startsWith("q14_") && chosenOption.gamingPositive) {
+                    currentState.gamingAnyPositive = true;
+                }
+
+                // Cas spécial Q32 ("Je l'assume" -> Matrice Quelconque immédiate)
+                if (chosenOption.action === "instant_qcq") {
+                    historyStack.push(previousSnapshot);
+                    finishQuiz("Matrice Quelconque (QCQ)");
+                    return;
+                }
+
+                // Détermination de la prochaine question
+                let nextId = chosenOption.next || q.next;
+                nextId = resolveTransition(nextId);
+
+                historyStack.push(previousSnapshot);
+                if (nextId === "finish") {
+                    finishQuiz();
+                } else {
+                    currentQuestionId = nextId;
+                    renderQuestion();
+                }
+
+            } else if (q.type === 'multiple') {
+                const checkedBoxes = document.querySelectorAll(`input[name="input_${q.id}"]:checked`);
+                if (checkedBoxes.length === 0) {
+                    showNotification("Sélectionne au moins une réponse.");
+                    return;
+                }
+
+                let selectedKeys = [];
+                checkedBoxes.forEach(cb => {
+                    const optIndex = parseInt(cb.value, 10);
+                    const chosenOption = q.options[optIndex];
+                    if (chosenOption.carre) currentState.carre += chosenOption.carre;
+                    if (chosenOption.triangle) currentState.triangle += chosenOption.triangle;
+                    if (chosenOption.key) selectedKeys.push(chosenOption.key);
+                });
+
+                if (q.id === "q12") {
+                    currentState.selectedArts = selectedKeys;
+                }
+
+                let nextId = resolveTransition(q.next);
+                historyStack.push(previousSnapshot);
+                currentQuestionId = nextId;
+                renderQuestion();
+            }
+        }
+
+        // Résout les transitions conditionnelles entre les sous-branches d'art
+        function resolveTransition(target) {
+            if (target === "dynamic_art") {
+                if (currentState.selectedArts.includes("musique")) return "q13_1";
+                if (currentState.selectedArts.includes("jeuxvideo")) {
+                    currentState.gamingAnyPositive = false;
+                    return "q14_1";
+                }
+                if (currentState.selectedArts.includes("cinema")) return "q15_1";
+                return "q16";
+            }
+            if (target === "after_music") {
+                if (currentState.selectedArts.includes("jeuxvideo")) {
+                    currentState.gamingAnyPositive = false;
+                    return "q14_1";
+                }
+                if (currentState.selectedArts.includes("cinema")) return "q15_1";
+                return "q16";
+            }
+            if (target === "after_gaming") {
+                // Si l'utilisateur n'a coché aucune option positive dans la série Jeux Vidéo : +2 triangle en arrière-plan
+                if (!currentState.gamingAnyPositive) {
+                    currentState.triangle += 2;
+                }
+                if (currentState.selectedArts.includes("cinema")) return "q15_1";
+                return "q16";
+            }
+            return target;
+        }
+
+        function prevQuestion() {
+            if (historyStack.length === 0) return;
+            const lastSnapshot = historyStack.pop();
+            currentQuestionId = lastSnapshot.questionId;
+            currentState = lastSnapshot.state;
+            renderQuestion();
+        }
+
+        function showNotification(msg) {
+            const existing = document.getElementById('toast-notif');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'toast-notif';
+            toast.className = "fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-indigo-500/40 text-white text-sm px-5 py-3 rounded-2xl shadow-2xl z-50 fade-in";
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentElement) toast.remove();
+            }, 2500);
+        }
+
+        function finishQuiz(forcedResult = null) {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('progress-indicator').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('score-carre-val').textContent = currentState.carre;
+            document.getElementById('score-triangle-val').textContent = currentState.triangle;
+
+            let title = "";
+            let desc = "";
+            let icon = "";
+
+            if (forcedResult === "Matrice Quelconque (QCQ)") {
+                title = "Matrice Quelconque 🔺";
+                icon = "🌀";
+                desc = "Tu as assumé tes préférences sans détour : ton profil est celui d'une matrice quelconque (QCQ), libre de toute contrainte de symétrie.";
+            } else if (currentState.carre >= currentState.triangle) {
+                // Égalité ou majorité de carrés -> Matrice Carrée
+                title = "Matrice Carrée 🔲";
+                icon = "📐";
+                desc = "Autant de lignes que de colonnes : tu es une Matrice Carrée. Structurée, équilibrée et dotée d'un déterminant bien défini.";
+            } else {
+                title = "Matrice Quelconque 🔺";
+                icon = "🌀";
+                desc = "Dimensions libres et asymétriques : tu es une Matrice Quelconque (QCQ). Imprévisible, souple et affranchie des cadres rigides.";
+            }
+
+            document.getElementById('result-icon').textContent = icon;
+            document.getElementById('result-title').textContent = title;
+            document.getElementById('result-desc').textContent = desc;
+        }
+
+        function restartQuiz() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('welcome-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
