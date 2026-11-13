@@ -47,7 +47,7 @@
             </div>
             <h2 class="text-2xl sm:text-3xl font-bold mb-4 tracking-tight">Quelle matrice es-tu ?</h2>
             <p class="text-slate-400 text-sm sm:text-base mb-8 leading-relaxed max-w-md mx-auto">
-                Réponds honnêtement à cette série de questions en arborescence pour déterminer ta véritable nature algébrique.
+                Réponds chacal sinon ça sera encore plus inutile que ça l'est déjà
             </p>
             <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
                 Commencer le test
@@ -256,7 +256,7 @@
             // --- QUESTIONS MUSIQUE (Aplaties, sans en-tête spécial) ---
             {
                 id: "q13_1",
-                text: "J'ai déjà dit « j'écoute de tout » :",
+                text: "J'ai déjà dit la phrase « j'écoute de tout » :",
                 type: "single",
                 options: [
                     { label: "Oui", carre: 1, triangle: 0 },
@@ -456,7 +456,7 @@
             // --- QUESTIONS STYLE VESTIMENTAIRE (Aplaties, sans "Si oui :") ---
             {
                 id: "q22_1",
-                text: "Je consomme des marques comme Pull and Bear / Adidas / Bershka / Nike :",
+                text: "Je consomme des marques comme Pull and Bear / Adidas / Bershka / Nike (en gros fast-fashion ou des trucs sans sauce) :",
                 type: "single",
                 options: [
                     { label: "Oui", carre: 2, triangle: 0 },
@@ -476,7 +476,7 @@
             },
             {
                 id: "q22_3",
-                text: "Dans ma garde-robe, on peut trouver + de 5 couleurs différentes (blanc, noir et couleurs trop proches exclues) :",
+                text: "Dans ma garde-robe, on peut trouver + de 5 couleurs différentes (blanc, noir et couleurs trop proches exclues, genre bleu + bleu marine = ntm) :",
                 type: "single",
                 options: [
                     { label: "Oui", carre: 0, triangle: 1 },
@@ -498,7 +498,7 @@
             // --- FIN DU TRONC COMMUN ---
             {
                 id: "q23",
-                text: "Je suis cisgenre :",
+                text: "Je suis cisgenre (mon identité de genre = c'que j'ai entre les jambes) :",
                 type: "single",
                 options: [
                     { label: "Oui", carre: 0, triangle: 0 },
@@ -518,7 +518,7 @@
             },
             {
                 id: "q25",
-                text: "Je me coupe les cheveux moi-même (ou par un pote) :",
+                text: "Je me coupe les cheveux moi-même (ou un pote/qqun de ma famille me les coupe) :",
                 type: "single",
                 options: [
                     { label: "Oui", carre: 0, triangle: 2 },
@@ -573,6 +573,7 @@
                 options: [
                     { label: "Le permis", carre: 0, triangle: 0 },
                     { label: "Le code", carre: 0, triangle: 1 },
+                    { label: "Une voiture sans permis", carre: 0, triangle: 3 },
                     { label: "Aucun", carre: 0, triangle: 0 }
                 ],
                 next: "q31"
@@ -604,9 +605,9 @@
                 type: "single",
                 options: [
                     { label: "Guitare", carre: 0, triangle: 0 },
-                    { label: "Non", carre: 1, triangle: 0 },
                     { label: "Piano", carre: 0, triangle: 1 },
-                    { label: "Autre", carre: 0, triangle: 2 }
+                    { label: "Autre", carre: 0, triangle: 2 },
+                    { label: "Aucun", carre: 1, triangle: 0 },
                 ],
                 next: "finish"
             }
@@ -831,16 +832,16 @@
             if (forcedResult === "Matrice Quelconque (QCQ)") {
                 title = "Matrice Quelconque 🔺";
                 icon = "🌀";
-                desc = "Tu as assumé tes préférences sans détour : ton profil est celui d'une matrice quelconque (QCQ), libre de toute contrainte de symétrie.";
+                desc = "T'es un énorme kiffeur et c'est tout à ton honneur. Profite de ta liberté (avec le consentement de la personne dont tu suce les pieds) jeune matrice quelconque. ";
             } else if (currentState.carre >= currentState.triangle) {
                 // Égalité ou majorité de carrés -> Matrice Carrée
                 title = "Matrice Carrée 🔲";
                 icon = "📐";
-                desc = "Autant de lignes que de colonnes : tu es une Matrice Carrée. Structurée, équilibrée et dotée d'un déterminant bien défini.";
+                desc = "T'es plutôt un classic burger (en tout cas au premier regard...), et c'est très bien comme ça. Sont aussi des matrices carrées : Macron, Squeezie, Joséphine ange gardien. Mais ne t'en fais pas jeune matrice, le test est loin d'être finis, tu pourrais être bien plus spécial que tu ne le pense.";
             } else {
                 title = "Matrice Quelconque 🔺";
                 icon = "🌀";
-                desc = "Dimensions libres et asymétriques : tu es une Matrice Quelconque (QCQ). Imprévisible, souple et affranchie des cadres rigides.";
+                desc = "T'es complètement hors norme, mais prends pas la grosse tête le test est pas finis, tu pourrais bien être une vieille matrice colonne qui pue... Sont aussi des matrices quelconques : Gattouz et La Fève";
             }
 
             document.getElementById('result-icon').textContent = icon;
