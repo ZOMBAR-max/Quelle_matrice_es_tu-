@@ -135,7 +135,7 @@
             },
             {
                 id: "q2",
-                text: "J'ai déjà été collé :",
+                text: "J'ai déjà été collé (au collège/lycée) :",
                 type: "single",
                 options: [
                     { label: "Oui", carre: 0, triangle: 1 },
@@ -249,6 +249,7 @@
                     { label: "Littérature", carre: 0, triangle: 1, key: "litterature" },
                     { label: "Musique", carre: 0, triangle: 0, key: "musique" },
                     { label: "Jeux vidéo", carre: 0, triangle: 0, key: "jeuxvideo" }
+                    { label: "Photo", carre: 0, triangle: 1, key: "Photo" }
                 ],
                 next: "dynamic_art"
             },
@@ -434,7 +435,7 @@
             },
             {
                 id: "q20",
-                text: "Mon goût de glace préféré c'est :",
+                text: "Le leilleur goût de glace c'est :",
                 type: "single",
                 options: [
                     { label: "Chocolat / vanille / noisette", carre: 1, triangle: 0 },
@@ -558,11 +559,13 @@
             },
             {
                 id: "q29",
-                text: "J'ai déjà possédé des lunettes aviateur :",
+                text: "Les doudounes :",
                 type: "single",
                 options: [
-                    { label: "Oui", carre: 1, triangle: 0 },
-                    { label: "Non", carre: 0, triangle: 0 }
+                    { label: "Je valide fort supplément les doudounes sans manches c'est carré", carre: 3, triangle: 0 },
+                    { label: "C'est carré", carre: 2, triangle: 0 },
+                    { label: "Je mets uniquement pour pas mourir en hiver", carre: 1, triangle: 0 },
+                    { label: "Plutôt mourir que de porter ça", carre: 0, triangle: 1 }
                 ],
                 next: "q30"
             },
@@ -572,7 +575,7 @@
                 type: "single",
                 options: [
                     { label: "Le permis", carre: 0, triangle: 0 },
-                    { label: "Le code", carre: 0, triangle: 1 },
+                    { label: "Le code (mais pas le permis)", carre: 0, triangle: 1 },
                     { label: "Une voiture sans permis", carre: 0, triangle: 3 },
                     { label: "Aucun", carre: 0, triangle: 0 }
                 ],
@@ -786,7 +789,7 @@
             if (target === "after_gaming") {
                 // Si l'utilisateur n'a coché aucune option positive dans la série Jeux Vidéo : +2 triangle en arrière-plan
                 if (!currentState.gamingAnyPositive) {
-                    currentState.triangle += 2;
+                    currentState.triangle += 1;
                 }
                 if (currentState.selectedArts.includes("cinema")) return "q15_1";
                 return "q16";
@@ -853,6 +856,505 @@
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('welcome-screen').classList.remove('hidden');
         }
+    // --- BRANCHE MATRICE CARRÉE : QUESTIONS 1 À 15 ---
+    // Symboles : '/' -> norm (Normale) | '∇' -> sup (Triangulaire Supérieure) | 'Δ' -> inf (Triangulaire Inférieure)
+    const questionsMatriceCarree = [
+        {
+            id: 1,
+            text: "Mon pote me fait un \"tu préfères\" rempli de vice :",
+            options: [
+                { text: "Je rigole en disant qu'il est fou et ne réponds pas", type: "norm", points: 1 },
+                { text: "J'enchaîne avec un second \"tu préfères\" qui déborde de vice", type: "sup", points: 1 },
+                { text: "Je réfléchis et réponds 1er degré", type: "inf", points: 1 }
+            ]
+        },
+        {
+            id: 2,
+            text: "Le 17 octobre je suis allé manifester :",
+            options: [
+                { text: "Oui", type: "sup", points: 1, nextId: 4 },
+                { text: "Non", type: "norm", points: 0, nextId: 3 }
+            ]
+        },
+        {
+            id: 3,
+            text: "Si non, pourquoi ?",
+            options: [
+                { text: "Je pouvais pas", type: "norm", points: 0 },
+                { text: "Je me suis pris une racaille", type: "inf", points: 2 },
+                { text: "Ça me concerne pas", type: "norm", points: 1 }
+            ]
+        },
+        {
+            id: 4,
+            text: "Je préfère :",
+            options: [
+                { text: "L'analyse-synthèse", type: "sup", points: 1 },
+                { text: "Le raisonnement par équivalence", type: "norm", points: 1 },
+                { text: "La récurrence", type: "inf", points: 1 },
+                { text: "Par implication", type: "norm", points: 1 },
+                { text: "Je sais pas", type: "norm", points: 2 },
+                { text: "Par l'absurde", type: "inf", points: 2 }
+            ]
+        },
+        {
+            id: 5,
+            text: "Je préfère :",
+            options: [
+                { text: "Plage", type: "norm", points: 1 },
+                { text: "Montagne", type: "sup", points: 1 },
+                { text: "Campagne", type: "inf", points: 1 }
+            ]
+        },
+        {
+            id: 6,
+            text: "Je m'essuie le baltrou :",
+            options: [
+                { text: "Debout", type: "inf", points: 2 },
+                { text: "Assis", type: "norm", points: 0 },
+                { text: "Pas", type: "inf", points: 5 },
+                { text: "Les deux", type: "sup", points: 1 },
+                { text: "Douche", type: "inf", points: 3 },
+                { text: "Bidet", type: "inf", points: 4 }
+            ]
+        },
+        {
+            id: 7,
+            text: "Quand on m'appelle pour un limousin :",
+            options: [
+                { text: "Je refuse", type: "norm", points: 1 },
+                { text: "Je fais", type: "sup", points: 1 },
+                { text: "Je fais sans les mains", type: "sup", points: 2 },
+                { text: "Je me retourne pour montrer mon sexe", type: "inf", points: 2 }
+            ]
+        },
+        {
+            id: 8,
+            text: "Je préfère :",
+            options: [
+                { text: "Bière", type: "norm", points: 1 },
+                { text: "Vin", type: "sup", points: 1 },
+                { text: "Champagne", type: "sup", points: 2 },
+                { text: "Vodka", type: "inf", points: 2 },
+                { text: "Ricard ou Pastis", type: "inf", points: 2 },
+                { text: "Gin", type: "inf", points: 1 },
+                { text: "Rhum", type: "sup", points: 1 },
+                { text: "Whisky", type: "norm", points: 1 },
+                { text: "Get 27", type: "inf", points: 1 },
+                { text: "Get 31", type: "inf", points: 2 },
+                { text: "Punch", type: "norm", points: 1 },
+                { text: "Jäger", type: "inf", points: 2 },
+                { text: "Cocktail", type: "norm", points: 1 },
+                { text: "Flash", type: "inf", points: 2 },
+                { text: "Mocktail", type: "norm", points: 1 },
+                { text: "Bière sans alcool", type: "norm", points: 10 },
+                { text: "Bois pas", type: "inf", points: 1 }
+            ]
+        },
+        {
+            id: 9,
+            text: "J'utilise en majorité des feuilles :",
+            options: [
+                { text: "grands carreaux", type: "norm", points: 1 },
+                { text: "petits carreaux", type: "sup", points: 1 },
+                { text: "Blanches", type: "inf", points: 1 }
+            ]
+        },
+        {
+            id: 10,
+            text: "Quand je me rase le maillot j'y vais :",
+            options: [
+                { text: "au rasoir électrique", type: "norm", points: 1 },
+                { text: "rasoir manuel", type: "inf", points: 1 },
+                { text: "ciseaux", type: "inf", points: 2 },
+                { text: "opinel", type: "inf", points: 3 },
+                { text: "cire", type: "sup", points: 2 },
+                { text: "bandes à épiler", type: "sup", points: 1 },
+                { text: "jamais fais", type: "inf", points: 2 }
+            ]
+        },
+        {
+            id: 11,
+            text: "Je me rase les aisselles :",
+            options: [
+                { text: "Oui", type: "sup", points: 1 },
+                { text: "Non", type: "norm", points: 0 }
+            ]
+        },
+        {
+            id: 12,
+            text: "Ton maximum de goon en une journée :",
+            options: [
+                { text: "0", type: "sup", points: 3 },
+                { text: "1 à 2", type: "norm", points: 1 },
+                { text: "3 à 5", type: "sup", points: 1 },
+                { text: "+5", type: "sup", points: 3 }
+            ]
+        },
+        {
+            id: 13,
+            text: "Maximum de jours sans prendre de douche :",
+            options: [
+                { text: "1 à 2", type: "norm", points: 1 },
+                { text: "3", type: "sup", points: 1 },
+                { text: "4 à 6", type: "inf", points: 1 },
+                { text: "1 semaine ou plus", type: "inf", points: 2 }
+            ]
+        },
+        {
+            id: 14,
+            text: "J'ai déjà vomi :",
+            options: [
+                { text: "sur moi", type: "inf", points: 1 },
+                { text: "sur qqn", type: "inf", points: 2 },
+                { text: "pendant l'acte", type: "inf", points: 3 },
+                { text: "aucun des trois", type: "sup", points: 1 }
+            ]
+        },
+        {
+            id: 15,
+            text: "J'ai déjà pratiqué en club :",
+            options: [
+                { text: "du foot", type: "norm", points: 1 },
+                { text: "du basket", type: "norm", points: 1 },
+                { text: "du hand", type: "sup", points: 1 },
+                { text: "du volley", type: "sup", points: 1 },
+                { text: "du hockey sur gazon", type: "sup", points: 1 },
+                { text: "du hockey sur glace", type: "inf", points: 2 },
+                { text: "du rugby", type: "inf", points: 1 },
+                { text: "Sport de combat", type: "inf", points: 1 },
+                { text: "Natation / Athlétisme", type: "sup", points: 1 },
+                { text: "Escrime", type: "inf", points: 1 },
+                { text: "Raquette", type: "norm", points: 0 },
+                { text: "Autre", type: "inf", points: 1 }
+            ]
+        }
+    ];
+
+    // --- CALCUL DU RÉSULTAT DE LA MATRICE CARRÉE ---
+    function calculerResultatMatriceCarree(scores) {
+        // scores = { norm: X, sup: Y, inf: Z }
+        let norm = scores.norm || 0;
+        let sup = scores.sup || 0;
+        let inf = scores.inf || 0;
+
+        let classement = [
+            { type: "Matrice Normale", val: norm },
+            { type: "Matrice Triangulaire Supérieure", val: sup },
+            { type: "Matrice Triangulaire Inférieure", val: inf }
+        ];
+
+        // Tri du score le plus élevé au plus faible
+        classement.sort((a, b) => b.val - a.val);
+
+        let premier = classement[0];
+        let deuxieme = classement[1];
+        let dernier = classement[2];
+
+        // Règle 1 : Écart entre les deux résultats majoritaires <= 3 -> Matrice Normale
+        if ((premier.val - deuxieme.val) <= 3) {
+            return "Matrice Normale";
+        }
+
+        // Règle 2 : Écart entre le premier et le dernier <= 7 -> Matrice Normale
+        if ((premier.val - dernier.val) <= 7) {
+            return "Matrice Normale";
+        }
+
+        // Règle 3 : Sinon, la majorité l'emporte (y compris si Normale '/' est majoritaire)
+        return premier.type;
+    }
+    // --- GESTION DU SAUT DE QUESTION (Q2 -> Q3 ou Q4) ---
+    function obtenirProchaineQuestionCarree(indexActuel, optionChoisie) {
+        // Si l'option choisie précise un numéro de question suivant (ex: Oui -> 4, Non -> 3)
+        if (optionChoisie.nextId) {
+            return questionsMatriceCarree.findIndex(q => q.id === optionChoisie.nextId);
+        }
+        // Sinon, on passe simplement à la question suivante dans l'ordre
+        return indexActuel + 1;
+    }
+    // --- 2. SECOND QUESTIONNAIRE : DIAGONALE (D) VS ÉLÉMENTAIRE (E) ---
+    const questionsDiagonalElementaire = [
+        {
+            id: 1,
+            text: "On m'a déjà dit que j'avais trop d'ego :",
+            options: [
+                { text: "Oui", type: "elem", points: 2 },
+                { text: "Non", type: "diag", points: 2 }
+            ]
+        },
+        {
+            id: 2,
+            text: "Il y a une soirée BDE la veille d'un DS :",
+            options: [
+                { text: "J'y vais", type: "elem", points: 1 },
+                { text: "J'y vais que si c'est un DS de langue", type: "neutre", points: 0 },
+                { text: "J'y vais pas", type: "diag", points: 2 }
+            ]
+        },
+        {
+            id: 3,
+            text: "Je suis collé avec un prof un peu intimidant, et j'ai l'impression qu'il s'est trompé dans une de ses explications :",
+            options: [
+                { text: "Je lui dis", type: "elem", points: 1 },
+                { text: "Je me tais et viens le cours après la colle", type: "diag", points: 1 }
+            ]
+        },
+        {
+            id: 4,
+            text: "J'ai déjà fait un truc illégal dans ma vie :",
+            options: [
+                { text: "Oui", type: "elem", points: 2 },
+                { text: "Non", type: "diag", points: 2 },
+                { text: "Je sais pas trop / pas sûr", type: "elem", points: 1 }
+            ]
+        },
+        {
+            id: 5,
+            text: "J'ai tendance à accorder beaucoup trop d'importance à ce que je fais :",
+            options: [
+                { text: "Plutôt", type: "elem", points: 2 },
+                { text: "Pas vraiment", type: "diag", points: 3 }
+            ]
+        }
+    ];
+
+    // --- 3. CALCUL DU RÉSULTAT DE LA MATRICE CARRÉE ---
+    function calculerResultatMatriceCarree(scores) {
+        let norm = scores.norm || 0;
+        let sup = scores.sup || 0;
+        let inf = scores.inf || 0;
+
+        let classement = [
+            { type: "Matrice Normale", val: norm },
+            { type: "Matrice Triangulaire Supérieure", val: sup },
+            { type: "Matrice Triangulaire Inférieure", val: inf }
+        ];
+
+        classement.sort((a, b) => b.val - a.val);
+
+        let premier = classement[0];
+        let deuxieme = classement[1];
+        let dernier = classement[2];
+
+        if ((premier.val - deuxieme.val) <= 3) return "Matrice Normale";
+        if ((premier.val - dernier.val) <= 7) return "Matrice Normale";
+        return premier.type;
+    }
+
+    // --- 4. GESTION DES ÉCRANS ET DE LA NAVIGATION ---
+    let indexCarree = 0;
+    let scoresCarree = { norm: 0, sup: 0, inf: 0 };
+    let indexDiagElem = 0;
+    let scoresDiagElem = { diag: 0, elem: 0 };
+
+    const observateurResultat = new MutationObserver(() => {
+        const conteneur = document.body;
+        if (!conteneur) return;
+
+        const textePage = conteneur.innerText.toLowerCase();
+        const estMatriceCarree = textePage.includes("matrice carrée") || textePage.includes("matrice carree");
+        const boutonExiste = document.getElementById("btn-suite-carree");
+
+        const boutonsPresents = Array.from(document.querySelectorAll("button"));
+        const estEcranFin = boutonsPresents.some(b => 
+            b.innerText.toLowerCase().includes("recommencer") || 
+            b.innerText.toLowerCase().includes("refaire") ||
+            b.innerText.toLowerCase().includes("rejouer")
+        );
+
+        if (estMatriceCarree && estEcranFin && !boutonExiste) {
+            const btnRecommencer = boutonsPresents.find(b => 
+                b.innerText.toLowerCase().includes("recommencer") || 
+                b.innerText.toLowerCase().includes("refaire") ||
+                b.innerText.toLowerCase().includes("rejouer")
+            );
+
+            const btnSuite = document.createElement("button");
+            btnSuite.id = "btn-suite-carree";
+            btnSuite.innerText = "Continuer le test (Sous-type Matrice Carrée)";
+            btnSuite.className = btnRecommencer ? btnRecommencer.className : "";
+            btnSuite.style.marginTop = "12px";
+            btnSuite.style.backgroundColor = "#10b981";
+            btnSuite.style.color = "#ffffff";
+            btnSuite.style.padding = "12px 24px";
+            btnSuite.style.borderRadius = "8px";
+            btnSuite.style.fontWeight = "600";
+            btnSuite.style.cursor = "pointer";
+            btnSuite.style.display = "block";
+            btnSuite.style.width = "100%";
+
+            btnSuite.onclick = demarrerTestMatriceCarree;
+
+            if (btnRecommencer && btnRecommencer.parentNode) {
+                btnRecommencer.parentNode.insertBefore(btnSuite, btnRecommencer.nextSibling);
+            }
+        }
+    });
+
+    observateurResultat.observe(document.body, { childList: true, subtree: true });
+
+    function demarrerTestMatriceCarree() {
+        indexCarree = 0;
+        scoresCarree = { norm: 0, sup: 0, inf: 0 };
+        afficherQuestionCarree();
+    }
+
+    function afficherQuestionCarree() {
+        if (indexCarree < 0 || indexCarree >= questionsMatriceCarree.length) {
+            afficherResultatFinalCarree();
+            return;
+        }
+
+        const q = questionsMatriceCarree[indexCarree];
+        const app = document.querySelector("#app") || document.querySelector("main") || document.body;
+
+        let htmlOptions = q.options.map((opt, idx) => `
+            <button onclick="repondreQuestionCarree(${idx})" 
+                style="width: 100%; text-align: left; padding: 14px 18px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #f8fafc; font-size: 16px; cursor: pointer; transition: all 0.2s;"
+                onmouseover="this.style.background='#334155'" 
+                onmouseout="this.style.background='#1e293b'">
+                ${opt.text}
+            </button>
+        `).join("");
+
+        app.innerHTML = `
+            <div style="max-width: 600px; margin: 40px auto; padding: 24px; background: #0f172a; color: #f8fafc; border-radius: 16px; font-family: sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                <div style="font-size: 13px; color: #94a3b8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+                    Approfondissement • Matrice Carrée (${q.id} / 15)
+                </div>
+                <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 24px; line-height: 1.4;">
+                    ${q.text}
+                </h2>
+                <div>
+                    ${htmlOptions}
+                </div>
+            </div>
+        `;
+    }
+
+    function repondreQuestionCarree(optionIndex) {
+        const q = questionsMatriceCarree[indexCarree];
+        const choix = q.options[optionIndex];
+
+        if (choix.type && scoresCarree[choix.type] !== undefined) {
+            scoresCarree[choix.type] += choix.points;
+        }
+
+        if (choix.nextId) {
+            indexCarree = questionsMatriceCarree.findIndex(item => item.id === choix.nextId);
+        } else {
+            indexCarree++;
+        }
+
+        afficherQuestionCarree();
+    }
+
+    function afficherResultatFinalCarree() {
+        const resultatFinal = calculerResultatMatriceCarree(scoresCarree);
+
+        // Si c'est une matrice normale, on enchaîne DIRECTEMENT et SANS ÉCRAN sur le test Diagonale/Élémentaire
+        if (resultatFinal === "Matrice Normale") {
+            demarrerTestDiagElem(); // Lancement direct du sous-test
+        } else {
+            // Sinon (Triangulaire Supérieure ou Inférieure), on affiche l'écran de résultat final habituel
+            let texteTitre = resultatFinal === "Matrice Triangulaire Supérieure" 
+                ? "Tu es une Matrice Carrée Triangulaire Supérieure" 
+                : "Tu es une Matrice Carrée Triangulaire Inférieure";
+
+            const app = document.querySelector("#app") || document.querySelector("main") || document.body;
+            app.innerHTML = `
+                <div style="max-width: 600px; margin: 40px auto; padding: 32px; background: #0f172a; color: #f8fafc; border-radius: 16px; font-family: sans-serif; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                    <div style="font-size: 14px; color: #38bdf8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">
+                        Résultat Final
+                    </div>
+                    <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 16px; color: #ffffff;">
+                        ${texteTitre}
+                    </h1>
+                    <button onclick="location.reload()" 
+                        style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px;">
+                        Recommencer tout le test
+                    </button>
+                </div>
+            `;
+        }
+    }
+    // --- 5. MOTEUR DU SOUS-TEST DIAGONALE VS ÉLÉMENTAIRE ---
+    function demarrerTestDiagElem() {
+        indexDiagElem = 0;
+        scoresDiagElem = { diag: 0, elem: 0 };
+        afficherQuestionDiagElem();
+    }
+
+    function afficherQuestionDiagElem() {
+        if (indexDiagElem < 0 || indexDiagElem >= questionsDiagonalElementaire.length) {
+            afficherResultatFinalDiagElem();
+            return;
+        }
+
+        const q = questionsDiagonalElementaire[indexDiagElem];
+        const app = document.querySelector("#app") || document.querySelector("main") || document.body;
+
+        let htmlOptions = q.options.map((opt, idx) => `
+            <button onclick="repondreQuestionDiagElem(${idx})" 
+                style="width: 100%; text-align: left; padding: 14px 18px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #f8fafc; font-size: 16px; cursor: pointer; transition: all 0.2s;"
+                onmouseover="this.style.background='#334155'" 
+                onmouseout="this.style.background='#1e293b'">
+                ${opt.text}
+            </button>
+        `).join("");
+
+        app.innerHTML = `
+            <div style="max-width: 600px; margin: 40px auto; padding: 24px; background: #0f172a; color: #f8fafc; border-radius: 16px; font-family: sans-serif; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                <div style="font-size: 13px; color: #38bdf8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+                    Différenciation • Diagonale vs Élémentaire (${q.id} / 5)
+                </div>
+                <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 24px; line-height: 1.4;">
+                    ${q.text}
+                </h2>
+                <div>
+                    ${htmlOptions}
+                </div>
+            </div>
+        `;
+    }
+
+    function repondreQuestionDiagElem(optionIndex) {
+        const q = questionsDiagonalElementaire[indexDiagElem];
+        const choix = q.options[optionIndex];
+
+        if (choix.type && scoresDiagElem[choix.type] !== undefined) {
+            scoresDiagElem[choix.type] += choix.points;
+        }
+
+        indexDiagElem++;
+        afficherQuestionDiagElem();
+    }
+
+    function afficherResultatFinalDiagElem() {
+        let diag = scoresDiagElem.diag || 0;
+        let elem = scoresDiagElem.elem || 0;
+
+        let titreFinal = diag >= elem ? "Tu es une Matrice Carrée Diagonale" : "Tu es une Matrice Carrée Élémentaire";
+        const app = document.querySelector("#app") || document.querySelector("main") || document.body;
+
+        app.innerHTML = `
+            <div style="max-width: 600px; margin: 40px auto; padding: 32px; background: #0f172a; color: #f8fafc; border-radius: 16px; font-family: sans-serif; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                <div style="font-size: 14px; color: #38bdf8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">
+                    Résultat Final
+                </div>
+                <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 16px; color: #ffffff;">
+                    ${titreFinal}
+                </h1>
+                <button onclick="location.reload()" 
+                    style="padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px;">
+                    Recommencer tout le test
+                </button>
+            </div>
+        `;
+    }
+
+```
     </script>
 </body>
 </html>
