@@ -55,20 +55,6 @@
             <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
                 Commencer le test
             </button>
-            <!-- ZONE DE TEST RAPIDE DES 8 FINS (À SUPPRIMER PLUS TARD) -->
-            <div class="mt-8 pt-6 border-t border-slate-800 text-left">
-                <p class="text-xs font-mono text-amber-400 mb-3 uppercase tracking-wider text-center">🛠️ Mode Test : Accès direct aux 8 fins</p>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('qcq_pieds')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">1. QCQ (Pieds)</button>
-                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('qcq_standard')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">2. QCQ (Standard)</button>
-                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('carree_intermediaire')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">3. Carrée (Interm.)</button>
-                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('diagonale')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">4. Carrée Diagonale</button>
-                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('elementaire')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">5. Carrée Élémentaire</button>
-                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('triangulaire_sup')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">6. Triangulaire Sup</button>
-                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('triangulaire_inf')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">7. Triangulaire Inf</button>
-                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('qcq_apres_carree')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">8. QCQ (Écart &lt; 4)</button>
-                </div>
-            </div>
         </div>
 
         <!-- Conteneur des Questions -->
