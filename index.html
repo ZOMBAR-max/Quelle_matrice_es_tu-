@@ -713,7 +713,7 @@
             },
             {
                 id: 10,
-                text: "Quand je me rase le maillot j'y vais :",
+                text: "Quand je me rase le maillot j'y vais (majoritairement) :",
                 options: [
                     { text: "au rasoir électrique", type: "norm", points: 1 },
                     { text: "rasoir manuel", type: "inf", points: 1 },
@@ -755,9 +755,11 @@
             {
                 id: 14,
                 text: "J'ai déjà vomi :",
+                type: "multiple",
                 options: [
                     { text: "sur moi", type: "inf", points: 1 },
-                    { text: "sur qqn", type: "inf", points: 2 },
+                    { text: "sur du mobilier", type: "inf", points: 1 },
+                    { text: "sur quelqu'un", type: "inf", points: 2 },
                     { text: "pendant l'acte", type: "inf", points: 3 },
                     { text: "aucun des trois", type: "sup", points: 1 }
                 ]
@@ -765,6 +767,7 @@
             {
                 id: 15,
                 text: "J'ai déjà pratiqué en club :",
+                type: "multiple",
                 options: [
                     { text: "du foot", type: "norm", points: 1 },
                     { text: "du basket", type: "norm", points: 1 },
@@ -789,41 +792,42 @@
                 text: "On m'a déjà dit que j'avais trop d'ego :",
                 options: [
                     { text: "Oui", type: "elem", points: 2 },
-                    { text: "Non", type: "diag", points: 2 }
+                    { text: "Non", type: "diag", points: 1 }
                 ]
             },
             {
                 id: 2,
                 text: "Il y a une soirée BDE la veille d'un DS :",
                 options: [
-                    { text: "J'y vais", type: "elem", points: 1 },
+                    { text: "J'y vais dans tous les cas", type: "elem", points: 1 },
                     { text: "J'y vais que si c'est un DS de langue", type: "neutre", points: 0 },
                     { text: "J'y vais pas", type: "diag", points: 2 }
                 ]
             },
             {
                 id: 3,
-                text: "Je suis collé avec un prof un peu intimidant, et j'ai l'impression qu'il s'est trompé dans une de ses explications :",
+                text: "Je suis collé avec un prof intimidant, et j'ai l'impression qu'il s'est trompé dans une de ses explications :",
                 options: [
-                    { text: "Je lui dis", type: "elem", points: 1 },
-                    { text: "Je me tais et viens le cours après la colle", type: "diag", points: 1 }
+                    { text: "Je lui dis en posant une question subtilement", type: "neutre", points: 0 },
+                    { text: "Je lui dis cash pistache qu'il s'est trompé", type: "elem", points: 2 },
+                    { text: "Je me tais et vérifie le cours après la colle", type: "diag", points: 1 }
                 ]
             },
             {
                 id: 4,
                 text: "J'ai déjà fait un truc illégal dans ma vie :",
                 options: [
-                    { text: "Oui", type: "elem", points: 2 },
+                    { text: "Oui", type: "elem", points: 1 },
                     { text: "Non", type: "diag", points: 2 },
-                    { text: "Je sais pas trop / pas sûr", type: "elem", points: 1 }
+                    { text: "Je sais pas trop / pas sûr", type: "neutre", points: 0 }
                 ]
             },
             {
                 id: 5,
-                text: "J'ai tendance à accorder beaucoup trop d'importance à ce que je fais :",
+                text: "J'ai supprimé qqun de ma vie par principe :",
                 options: [
-                    { text: "Plutôt", type: "elem", points: 2 },
-                    { text: "Pas vraiment", type: "diag", points: 3 }
+                    { text: "Oui", type: "elem", points: 1 },
+                    { text: "Non", type: "neutre", points: 0 }
                 ]
             }
         ];
@@ -1091,7 +1095,7 @@
             let dernier = classement[2];
 
             let resultat = premier.type;
-            if ((premier.val - deuxieme.val) <= 3 || (premier.val - dernier.val) <= 7) {
+            if ((premier.val - deuxieme.val) <= 1 || (premier.val - dernier.val) <= 5) {
                 resultat = "Normale";
             }
 
@@ -1162,7 +1166,7 @@
             let elem = scoresDiagElem.elem || 0;
 
             // NOUVELLE RÈGLE : Si l'écart est inférieur à 4, c'est un profil Quelconque (8e écran)
-            if (Math.abs(diag - elem) < 4) {
+            if (Math.abs(diag - elem) < 5) {
                 renderFinalScreen("qcq_apres_carree");
             } else if (diag >= elem) {
                 // ÉCRAN 4 : Matrice Carrée Diagonale
