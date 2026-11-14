@@ -16,6 +16,9 @@
         .fade-in {
             animation: fadeIn 0.25s ease-out forwards;
         }
+        #result-desc {
+            white-space: pre-line;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
@@ -52,6 +55,20 @@
             <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
                 Commencer le test
             </button>
+            <!-- ZONE DE TEST RAPIDE DES 8 FINS (À SUPPRIMER PLUS TARD) -->
+            <div class="mt-8 pt-6 border-t border-slate-800 text-left">
+                <p class="text-xs font-mono text-amber-400 mb-3 uppercase tracking-wider text-center">🛠️ Mode Test : Accès direct aux 8 fins</p>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('qcq_pieds')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">1. QCQ (Pieds)</button>
+                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('qcq_standard')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">2. QCQ (Standard)</button>
+                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('carree_intermediaire')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">3. Carrée (Interm.)</button>
+                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('diagonale')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">4. Carrée Diagonale</button>
+                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('elementaire')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">5. Carrée Élémentaire</button>
+                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('triangulaire_sup')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">6. Triangulaire Sup</button>
+                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('triangulaire_inf')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">7. Triangulaire Inf</button>
+                    <button onclick="document.getElementById('welcome-screen').classList.add('hidden'); renderFinalScreen('qcq_apres_carree')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700/50 transition text-left">8. QCQ (Écart &lt; 4)</button>
+                </div>
+            </div>
         </div>
 
         <!-- Conteneur des Questions -->
@@ -1158,7 +1175,10 @@
             let diag = scoresDiagElem.diag || 0;
             let elem = scoresDiagElem.elem || 0;
 
-            if (diag >= elem) {
+            // NOUVELLE RÈGLE : Si l'écart est inférieur à 4, c'est un profil Quelconque (8e écran)
+            if (Math.abs(diag - elem) < 4) {
+                renderFinalScreen("qcq_apres_carree");
+            } else if (diag >= elem) {
                 // ÉCRAN 4 : Matrice Carrée Diagonale
                 renderFinalScreen("diagonale");
             } else {
@@ -1190,7 +1210,7 @@
 
             if (screenType === "qcq_pieds") {
                 // 1. Quelconque (Option Pieds)
-                badgeEl.textContent = "Résultat Final";
+                badgeEl.textContent = "Première étape terminée";
                 iconEl.textContent = "🦶";
                 titleEl.textContent = "Matrice Quelconque 🔺";
                 descEl.textContent = "T'es un énorme kiffeur et c'est tout à ton honneur. Profite de ta liberté (avec le consentement de la personne dont tu suces les pieds) jeune matrice quelconque.";
@@ -1200,10 +1220,10 @@
 
             } else if (screenType === "qcq_standard") {
                 // 2. Quelconque (Standard)
-                badgeEl.textContent = "Résultat Final";
+                badgeEl.textContent = "Première étape terminée";
                 iconEl.textContent = "🌀";
                 titleEl.textContent = "Matrice Quelconque 🔺";
-                descEl.textContent = "T'es complètement hors norme, mais prends pas la grosse tête le test est pas fini, tu pourrais bien être une vieille matrice colonne qui pue... Sont aussi des matrices quelconques : Gattouz et La Fève.";
+                descEl.textContent = "T'es complètement hors norme, mais prends pas la grosse tête non plus le test est pas fini, tu pourrais bien être une vieille matrice colonne qui pue... \nSont aussi des matrices quelconques : Gattouz et La Fève.";
                 statsContainer.classList.remove('hidden');
                 document.getElementById('score-carre-val').textContent = currentState.carre;
                 document.getElementById('score-triangle-val').textContent = currentState.triangle;
@@ -1213,7 +1233,7 @@
                 badgeEl.textContent = "Première étape terminée";
                 iconEl.textContent = "🔲";
                 titleEl.textContent = "Matrice Carrée 🔲";
-                descEl.textContent = "T'es plutôt un classic burger (en tout cas au premier regard...), et c'est très bien comme ça. Sont aussi des matrices carrées : Macron, Squeezie, Joséphine ange gardien. Mais ne t'en fais pas jeune matrice, le test est loin d'être fini, tu pourrais être bien plus spécial que tu ne le penses.";
+                descEl.textContent = "T'es plutôt un classic burger (en tout cas au premier regard...), et c'est très bien comme ça. \nMais ne t'en fais pas jeune matrice, le test est loin d'être fini, tu pourrais être bien plus spécial que tu ne le penses.";
                 statsContainer.classList.remove('hidden');
                 document.getElementById('score-carre-val').textContent = currentState.carre;
                 document.getElementById('score-triangle-val').textContent = currentState.triangle;
@@ -1231,29 +1251,36 @@
                 // 4. Matrice Carrée Diagonale
                 badgeEl.textContent = "Résultat Final";
                 iconEl.textContent = "⚡";
-                titleEl.textContent = "Tu es une Matrice Carrée Diagonale";
-                descEl.textContent = "Équilibrée, posée, pas besoin d'en faire des caisses : tout est aligné sur ta diagonale.";
+                titleEl.textContent = "Tu es une Matrice Diagonale";
+                descEl.textContent = "T'es carrément droit dans tes bottes, on pourrait te qualifier de normal, et c'est très bien comme ça. Si le monde avait plus de gens comme toi, tout irait pour le mieux. On raconte même que pas une matrice diagonale ne s'est déjoà embrouillé avec quelqu'un. \nEst une matrice diagonale : Le pain";
 
             } else if (screenType === "elementaire") {
                 // 5. Matrice Carrée Élémentaire
                 badgeEl.textContent = "Résultat Final";
                 iconEl.textContent = "🔥";
                 titleEl.textContent = "Tu es une Matrice Carrée Élémentaire";
-                descEl.textContent = "Directe, tranchante et un brin insolente : tu ne passes pas inaperçu.";
+                descEl.textContent = "Toi t'es un sacré spécimen, t'as pas de ligne directrice t'as un point directeur. Solide sur ton appui (peut être même un peu trop), la légende raconte même que si on rassemble toutes les matrices élémentaires du monde, on pourrait créer n'importe quel individu... \nEst une matrice élémentaire : Le sel";
 
             } else if (screenType === "triangulaire_sup") {
                 // 6. Matrice Carrée Triangulaire Supérieure
                 badgeEl.textContent = "Résultat Final";
                 iconEl.textContent = "📐";
-                titleEl.textContent = "Tu es une Matrice Carrée Triangulaire Supérieure";
-                descEl.textContent = "Tout se passe en haut : structure, ambition et maîtrise au-dessus de la diagonale.";
+                titleEl.textContent = "Tu es une Matrice Triangulaire Supérieure";
+                descEl.textContent = "T'es un(e) gars/meuf chill, sympatoche, bref tel le morceau de chocolat au bout des cornets de glace tu nous suprends pas mais ça fait toujours plaisir de te voir. \nFAIS TRÈS ATTENTION A TON HOMONYME MALÉFIQUE LA TRIANGULAIRE INFÉRIEURE. \nSont des matrices triangulaires sup : Keanu Reeves, l'emoji 👌";
 
             } else if (screenType === "triangulaire_inf") {
                 // 7. Matrice Carrée Triangulaire Inférieure
                 badgeEl.textContent = "Résultat Final";
                 iconEl.textContent = "🔻";
-                titleEl.textContent = "Tu es une Matrice Carrée Triangulaire Inférieure";
-                descEl.textContent = "Tu assumes tes choix à 100%, même les plus improbables, tout en bas de la matrice.";
+                titleEl.textContent = "Tu es une Matrice Triangulaire Inférieure";
+                descEl.textContent = "Tel le loup déguisé en mouton, t'as peut être l'air normal, mais au fond t'es un gros secoué du bocal. \nLE LOUP EST RENTRÉ DANS LA BERGERIE AOUUU. \nSont des matrices triangulaires inf : P-Diddy ; Epstein ; Stephen Hawking";
+            
+            } else if (screenType === "qcq_apres_carree") {
+                // 8. Matrice Quelconque (écart < 4 entre diagonale et élémentaire)
+                badgeEl.textContent = "Résultat Final";
+                iconEl.textContent = "🌀";
+                titleEl.textContent = "Matrice Carrée Quelconque 🔺";
+                descEl.textContent = "Diffcile de te mettre dans une case, donc t'en as pas ! Tu créé ta propre case yeaha. Attention, tout peut encore basculer, la matrice nulle te regarde avec un œuil malicieu... \nSont des matrices quelconques : trop vaste, continu pour savoir...";
             }
         }
 
