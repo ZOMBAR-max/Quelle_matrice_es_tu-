@@ -1308,6 +1308,344 @@
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('welcome-screen').classList.remove('hidden');
         }
+        <!-- ===================================================================== -->
+<!-- BRLIQUE PROPRE : 16 QUESTIONS DE LA MATRICE QUELCONQUE & 11 ISSUES    -->
+<!-- ===================================================================== -->
+<script>
+// Base de données complète des 16 questions de la Matrice Quelconque
+const vraieBaseQuelconque = [
+    {
+        id: "q1",
+        text: "Je préfère :",
+        type: "single",
+        options: [
+            { label: "Grosse boîte supplément soirée commerciale", H: 2, L: 0 },
+            { label: "Boîte techno / rave / teuf", H: 0, L: 1 },
+            { label: "Soirée chill sur les quais", H: 1, L: 1 },
+            { label: "Soirée chill à l'appart", H: 0, L: 1 }
+        ]
+    },
+    {
+        id: "q2",
+        text: "Je suis à la salle et je vois un mec qui fait un exercice n'importe comment :",
+        type: "single",
+        options: [
+            { label: "J'ignore / je dis rien puisque anxiété sociale", H: 0, L: 0 },
+            { label: "Je rigole", H: 1, L: 0 },
+            { label: "Je snap ce geush", H: 2, L: 0 },
+            { label: "Je vais le voir et lui explique gentiment", H: 0, L: 1 }
+        ]
+    },
+    {
+        id: "q3",
+        text: "Je suis très actif sur Insta :",
+        type: "multiple",
+        options: [
+            { label: "Je poste fréquemment des story", H: 2, L: 0 },
+            { label: "Je poste fréquemment des post", H: 3, L: 0 },
+            { label: "J'accumule les post et les story à la une à travers les années", H: 1, L: 0 },
+            { label: "Mon téléphone ne fait pas tourner Insta", H: -2, L: 0 },
+            { label: "Pas vraiment", H: 0, L: 0 }
+        ]
+    },
+    {
+        id: "q4",
+        text: "Quand je vais en soirée, je fais :",
+        type: "multiple",
+        options: [
+            { label: "Une petite story", H: 1, L: 0 },
+            { label: "Un petit post", H: 2, L: 0 },
+            { label: "Rien de spécial", H: 0, L: 0 },
+            { label: "J'ai même pas pris de photo", H: 0, L: 1 },
+            { label: "Je vais pas en soirée", H: -1, L: 0 }
+        ]
+    },
+    {
+        id: "q5",
+        text: "Une granny oscillante traverse la route :",
+        type: "multiple",
+        options: [
+            { label: "Je fais rien car anxiété sociale", H: 0, L: 0 },
+            { label: "Je fais rien car blc de cette tchoin", H: 1, L: 0 },
+            { label: "Je l'aide", H: 0, L: 1 }
+        ]
+    },
+    {
+        id: "q6",
+        text: "J'ai très envie de caguer (faire caca) à la BU :",
+        type: "multiple",
+        options: [
+            { label: "C'est que les hallouf qui font caca à la BU", H: 2, L: 0 },
+            { label: "J'ai peur de choper une hépatite si j'y vais", H: 1, L: 0 },
+            { label: "Flemme / j'aime pas chioter autre part que chez moi", H: 0, L: 0 },
+            { label: "J'y vais", H: -1, L: 0 }
+        ]
+    },
+    {
+        id: "q7",
+        text: "Mon pote a fait un pet foireux (slip souillé) :",
+        type: "multiple",
+        options: [
+            { label: "Je me marre puis le couvre", H: 0, L: 2 },
+            { label: "Je le couvre", H: 0, L: 1 },
+            { label: "Je me marre puis je le laisse dans sa merde (littéralement)", H: 1, L: 0 },
+            { label: "Je snap ce golem", H: 2, L: 0 },
+            { label: "M. Gamelon le saura le lendemain", H: 0, L: 0, forceColonne: true }
+        ]
+    },
+    {
+        id: "q8",
+        text: "Je pète en cours ; le prof accuse mon pote :",
+        type: "multiple",
+        options: [
+            { label: "Je me dénonce", H: 0, L: 1 },
+            { label: "Je garde le silence", H: 0, L: 0 }
+        ]
+    },
+    {
+        id: "q9",
+        text: "Mon pote me taxe régulièrement des feuilles. Il est 8h. J'en ai 3. Il m'en demande une :",
+        type: "multiple",
+        options: [
+            { label: "Je donne (en l'insultant)", H: 0, L: 1 },
+            { label: "Je donne rien à ce sarce", H: 0, L: 0 },
+            { label: "Je lui donne une demi-feuille simple, ce charclo mérite pas plus", H: 1, L: 0 }
+        ]
+    },
+    {
+        id: "q10",
+        text: "Je suis ce pote :",
+        type: "multiple",
+        options: [
+            { label: "Oui", H: 0, L: -1 },
+            { label: "Non", H: 0, L: 0 }
+        ]
+    },
+    {
+        id: "q11",
+        text: "J'ai déjà lu un livre de philosophie par intérêt personnel (hors obligations ou conseils scolaires) :",
+        type: "single",
+        options: [
+            { label: "Oui", H: 0, L: 1 },
+            { label: "Non", H: 0, L: 0 }
+        ]
+    },
+    {
+        id: "q12",
+        text: "J'ai déjà été suffisamment impacté (bouleversé) par une œuvre musicale / picturale / cinématographique pour qu'elle affecte ma perception sur plusieurs aspects de la vie / mes valeurs :",
+        type: "single",
+        options: [
+            { label: "Oui", H: 0, L: 2 },
+            { label: "Non", H: 0, L: 0 }
+        ]
+    },
+    {
+        id: "q13",
+        text: "Ça s'embrouille sur le groupe classe sur le design du pull :",
+        type: "single",
+        options: [
+            { label: "J'apaise les tensions et apporte des solutions", H: -1, L: 0 },
+            { label: "Je jette de l'huile sur le feu", H: 0, L: 0 },
+            { label: "Je tente de créer une guerre civile intra-PT", H: 2, L: 0 },
+            { label: "J'envoie une vidéo de biche", H: 1, L: 0 }
+        ]
+    },
+    {
+        id: "q14",
+        text: "Je pose une question à Lambert en cours avant de me faire absolument crucifier :",
+        type: "single",
+        options: [
+            { label: "Je ferme ma grande bouche pour toujours", H: 0, L: 0 },
+            { label: "Balek de ce sarce je pose une question si je veux", H: 1, L: 0 }
+        ]
+    },
+    {
+        id: "q15",
+        text: "Je me fais massacrer en colle supplément « vous êtes vraiment une star vous » :",
+        type: "single",
+        options: [
+            { label: "Je pleure", H: 0, L: -1 },
+            { label: "Maxi gênant, je déguste mon seum jusqu'au prochain fist (5h plus tard)", H: 0, L: 1 },
+            { label: "À force j'ai l'habitude", H: 0, L: -1 },
+            { label: "Blc mentalité prépa", H: 0, L: 0 }
+        ]
+    },
+    {
+        id: "q16",
+        text: "Le reel du nouveau compte PTSI meme (abonnés pp Israël) :",
+        type: "single",
+        options: [
+            { label: "Est méga problématique", H: 0, L: 1 },
+            { label: "Je capte qu'on trouve ça chaud mais je reste neutre", H: 0, L: 0 },
+            { label: "On peut rire non ?", H: 0, L: -2 }
+        ]
+    }
+];
+
+let vrqIndex = 0;
+let vrqScoreH = 0;
+let vrqScoreL = 0;
+let vrqForceCol = false;
+
+function startVraieBrancheQuelconque() {
+    // Cache l'écran de résultat ou de tronc commun d'origine
+    const resScreen = document.getElementById("result-screen");
+    if (resScreen) resScreen.style.display = "none";
+    const welcomeScreen = document.getElementById("welcome-screen");
+    if (welcomeScreen) welcomeScreen.style.display = "none";
+
+    vrqIndex = 0;
+    vrqScoreH = 0;
+    vrqScoreL = 0;
+    vrqForceCol = false;
+
+    renderVrqQuestion();
+}
+
+function renderVrqQuestion() {
+    const q = vraieBaseQuelconque[vrqIndex];
+    let qScreen = document.getElementById("vrq-screen");
+    if (!qScreen) {
+        qScreen = document.createElement("div");
+        qScreen.id = "vrq-screen";
+        qScreen.className = "quiz-box"; // Utilise la même boîte CSS que ton site
+        qScreen.style.margin = "20px auto";
+        document.body.appendChild(qScreen);
+    }
+    qScreen.style.display = "block";
+
+    const inputType = q.type === "multiple" ? "checkbox" : "radio";
+    const hintText = q.type === "multiple" ? "Plusieurs réponses possibles" : "";
+
+    let optionsHTML = q.options.map((opt, idx) => `
+        <label class="option-label" style="display:flex; align-items:center; gap:10px; margin:10px 0; cursor:pointer;">
+            <input type="${inputType}" name="vrq_opt" value="${idx}">
+            <span>${opt.label}</span>
+        </label>
+    `).join("");
+
+    qScreen.innerHTML = `
+        <div style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 8px;">
+            Matrice Quelconque — Question ${vrqIndex + 1} / ${vraieBaseQuelconque.length}
+        </div>
+        <h2>${q.text}</h2>
+        <p style="font-size: 0.85rem; opacity: 0.75; margin-bottom: 12px;">${hintText}</p>
+        <div>${optionsHTML}</div>
+        <button class="btn-primary" id="vrq-next" style="margin-top:20px;">Suivant</button>
+    `;
+
+    document.getElementById("vrq-next").onclick = function() {
+        const checked = Array.from(qScreen.querySelectorAll('input[name="vrq_opt"]:checked'));
+        if (checked.length === 0) {
+            alert("Sélectionne au moins une réponse !");
+            return;
+        }
+        checked.forEach(input => {
+            const chosen = q.options[parseInt(input.value, 10)];
+            vrqScoreH += (chosen.H || 0);
+            vrqScoreL += (chosen.L || 0);
+            if (chosen.forceColonne) vrqForceCol = true;
+        });
+
+        vrqIndex++;
+        if (vrqIndex < vraieBaseQuelconque.length) {
+            renderVrqQuestion();
+        } else {
+            evaluateVrqOutcome();
+        }
+    };
+}
+
+function evaluateVrqOutcome() {
+    const qScreen = document.getElementById("vrq-screen");
+    if (qScreen) qScreen.style.display = "none";
+
+    const ecart = Math.abs(vrqScoreH - vrqScoreL);
+    const majoriteH = vrqScoreH >= vrqScoreL;
+
+    if (vrqForceCol) {
+        showVrqResult("Tu es une Matrice Colonne", "Une seule colonne verticale pure et dure. M. Gamelon est déjà au courant.", 4, 1, "n × 1 (Colonne)");
+        return;
+    }
+
+    if (ecart <= 1) {
+        showVrqResult("Tu es finalement une Matrice Carrée !", "Tes tendances H et L s'équilibrent parfaitement (écart ≤ 1).", 3, 3, "n × n (Carrée)");
+        return;
+    }
+
+    if (ecart >= 12) {
+        if (majoriteH) {
+            showVrqResult("Tu es une Matrice Colonne", "Ta hauteur est maximale (majorité H avec un écart ≥ 12).", 4, 1, "n × 1 (Colonne)");
+        } else {
+            showVrqResult("Tu es une Matrice Ligne", "Ta largeur est maximale (majorité L avec un écart ≥ 12).", 1, 4, "1 × n (Ligne)");
+        }
+        return;
+    }
+
+    if (ecart >= 10 && ecart <= 11) {
+        if (majoriteH) {
+            showVrqResult("Tu es une Matrice Quelconque en 4X par X", "Rapport 1/4 (hauteur dominante).", 4, 1, "4X × X");
+        } else {
+            showVrqResult("Tu es une Matrice Quelconque en X par 4X", "Rapport 1/4 (largeur dominante).", 1, 4, "X × 4X");
+        }
+        return;
+    }
+
+    if (ecart >= 7 && ecart <= 9) {
+        if (majoriteH) {
+            showVrqResult("Tu es une Matrice Quelconque en 3X par X", "Rapport 1/3 (hauteur dominante).", 3, 1, "3X × X");
+        } else {
+            showVrqResult("Tu es une Matrice Quelconque en X par 3X", "Rapport 1/3 (largeur dominante).", 1, 3, "X × 3X");
+        }
+        return;
+    }
+
+    if (ecart >= 4 && ecart <= 6) {
+        if (majoriteH) {
+            showVrqResult("Tu es une Matrice Quelconque en 2X par X", "Rapport 1/2 (hauteur dominante).", 4, 2, "2X × X");
+        } else {
+            showVrqResult("Tu es une Matrice Quelconque en X par 2X", "Rapport 1/2 (largeur dominante).", 2, 4, "X × 2X");
+        }
+        return;
+    }
+
+    if (majoriteH) {
+        showVrqResult("Tu es une Matrice Quelconque en X par X - 1", "Presque carrée, ligne supplémentaire.", 4, 3, "X × (X - 1)");
+    } else {
+        showVrqResult("Tu es une Matrice Quelconque en X - 1 par X", "Presque carrée, colonne supplémentaire.", 3, 4, "(X - 1) × X");
+    }
+}
+
+function showVrqResult(title, desc, rows, cols, formatLabel) {
+    let resScreen = document.getElementById("result-screen");
+    if (!resScreen) {
+        resScreen = document.createElement("div");
+        resScreen.id = "result-screen";
+        resScreen.className = "quiz-box";
+        document.body.appendChild(resScreen);
+    }
+    resScreen.style.display = "block";
+
+    let cellsHTML = "";
+    for (let r = 1; r <= rows; r++) {
+        for (let c = 1; c <= cols; c++) {
+            cellsHTML += `<span>a<sub>${r}${c}</sub></span>`;
+        }
+    }
+
+    resScreen.innerHTML = `
+        <h2>${title}</h2>
+        <p id="result-desc" style="white-space: pre-line;">${desc}</p>
+        <div class="matrix-visual-wrapper" style="display:flex; flex-direction:column; align-items:center; margin:20px auto;">
+            <div class="matrix-bracket-box" style="display:inline-flex; position:relative; padding:8px 18px; border-left:3px solid currentColor; border-right:3px solid currentColor; border-radius:12px;">
+                <div class="matrix-grid-cells" style="display:grid; grid-template-columns:repeat(${cols}, auto); gap:10px 16px; font-family:monospace; font-weight:bold;">
+                    ${cellsHTML}
+                </div>
+            </div>
+            <div class="matrix-caption" style="margin-top:10px; font-style:italic; font-size:0.9rem;">Représentation visuelle : format ${formatLabel}</div>
+        </div>
+    `;
+}
 </script>
 </body>
 </html>
