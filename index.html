@@ -1078,7 +1078,7 @@
             renderQuestionCarree();
         }
 
-        function evaluateCarreeOutcome() {
+                function evaluateCarreeOutcome() {
             let norm = scoresCarree.norm || 0;
             let sup = scoresCarree.sup || 0;
             let inf = scoresCarree.inf || 0;
@@ -1094,25 +1094,34 @@
             let deuxieme = classement[1];
             let dernier = classement[2];
 
-            let resultat = premier.type;
-            if ((premier.val - deuxieme.val) <= 1 || (premier.val - dernier.val) <= 5) {
-                resultat = "Normale";
-            }
-
-            if (resultat === "Normale") {
-                // TRANSITION INSTANTANÉE ET FLUIDE SANS ÉCRAN INTERMÉDIAIRE
+            // 1. Les deux premières conditions (si vérifiées -> Normale)
+            if ((premier.val - deuxieme.val) <= 3 || (premier.val - dernier.val) <= 7) {
                 currentPhase = "diagElem";
                 indexDiagElem = 0;
                 scoresDiagElem = { diag: 0, elem: 0 };
                 renderQuestionDiagElem();
-            } else if (resultat === "Supérieure") {
-                // ÉCRAN 6 : Matrice Carrée Triangulaire Supérieure
+                return;
+            }
+
+            // 2. Si on n'est PAS Normale : vérification du seuil > 12 sur Sup ou Inf
+            if (sup > 12 || inf > 12) {
+                renderFinalScreen("qcq_standard");
+                return;
+            }
+
+            // 3. Sinon, on affiche la matrice triangulaire correspondante
+            if (premier.type === "Normale") {
+                currentPhase = "diagElem";
+                indexDiagElem = 0;
+                scoresDiagElem = { diag: 0, elem: 0 };
+                renderQuestionDiagElem();
+            } else if (premier.type === "Supérieure") {
                 renderFinalScreen("triangulaire_sup");
             } else {
-                // ÉCRAN 7 : Matrice Carrée Triangulaire Inférieure
                 renderFinalScreen("triangulaire_inf");
             }
         }
+
 
         // --- SOUS-TEST DIAGONALE VS ÉLÉMENTAIRE ---
         function renderQuestionDiagElem() {
