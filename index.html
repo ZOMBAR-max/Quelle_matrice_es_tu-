@@ -1549,59 +1549,59 @@
             const majoriteH = vrqScoreH >= vrqScoreL;
 
             if (vrqForceCol) {
-                showVrqResult("Tu es une Matrice Colonne", "Une seule colonne verticale pure et dure. M. Gamelon est déjà au courant.", 4, 1, "n × 1 (Colonne)");
+                showVrqResult("Tu es une Matrice Colonne", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 return;
             }
 
             if (ecart <= 1) {
-                showVrqResult("Tu es finalement une Matrice Carrée !", "Tes tendances H et L s'équilibrent parfaitement (écart ≤ 1).", 3, 3, "n × n (Carrée)");
+                showVrqResult("Tu es finalement une Matrice Carrée !", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 return;
             }
 
             if (ecart >= 12) {
                 if (majoriteH) {
-                    showVrqResult("Tu es une Matrice Colonne", "Ta hauteur est maximale (majorité H avec un écart ≥ 12).", 4, 1, "n × 1 (Colonne)");
+                    showVrqResult("Tu es une Matrice Colonne", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 } else {
-                    showVrqResult("Tu es une Matrice Ligne", "Ta largeur est maximale (majorité L avec un écart ≥ 12).", 1, 4, "1 × n (Ligne)");
+                    showVrqResult("Tu es une Matrice Ligne", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 }
                 return;
             }
 
             if (ecart >= 10 && ecart <= 11) {
                 if (majoriteH) {
-                    showVrqResult("Tu es une Matrice Quelconque en 4X par X", "Rapport 1/4 (hauteur dominante).", 4, 1, "4X × X");
+                    showVrqResult("Tu es une Matrice Quelconque en 4X par X", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 } else {
-                    showVrqResult("Tu es une Matrice Quelconque en X par 4X", "Rapport 1/4 (largeur dominante).", 1, 4, "X × 4X");
+                    showVrqResult("Tu es une Matrice Quelconque en X par 4X", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 }
                 return;
             }
 
             if (ecart >= 7 && ecart <= 9) {
                 if (majoriteH) {
-                    showVrqResult("Tu es une Matrice Quelconque en 3X par X", "Rapport 1/3 (hauteur dominante).", 3, 1, "3X × X");
+                    showVrqResult("Tu es une Matrice Quelconque en 3X par X", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 } else {
-                    showVrqResult("Tu es une Matrice Quelconque en X par 3X", "Rapport 1/3 (largeur dominante).", 1, 3, "X × 3X");
+                    showVrqResult("Tu es une Matrice Quelconque en X par 3X", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 }
                 return;
             }
 
             if (ecart >= 4 && ecart <= 6) {
                 if (majoriteH) {
-                    showVrqResult("Tu es une Matrice Quelconque en 2X par X", "Rapport 1/2 (hauteur dominante).", 4, 2, "2X × X");
+                    showVrqResult("Tu es une Matrice Quelconque en 2X par X", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 } else {
-                    showVrqResult("Tu es une Matrice Quelconque en X par 2X", "Rapport 1/2 (largeur dominante).", 2, 4, "X × 2X");
+                    showVrqResult("Tu es une Matrice Quelconque en X par 2X", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
                 }
                 return;
             }
 
             if (majoriteH) {
-                showVrqResult("Tu es une Matrice Quelconque en X par X - 1", "Presque carrée, ligne supplémentaire.", 4, 3, "X × (X - 1)");
+                showVrqResult("Tu es une Matrice Quelconque en X par X - 1", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
             } else {
-                showVrqResult("Tu es une Matrice Quelconque en X - 1 par X", "Presque carrée, colonne supplémentaire.", 3, 4, "(X - 1) × X");
+                showVrqResult("Tu es une Matrice Quelconque en X - 1 par X", "Pas de message personnalis pour le moment c'est minuit là frr jsuis crevé jvais aller dormir");
             }
         }
 
-        function showVrqResult(title, desc, rows, cols, formatLabel) {
+        function showVrqResult(title, desc) {
             let resScreen = document.getElementById("result-screen");
             if (!resScreen) {
                 resScreen = document.createElement("div");
@@ -1611,25 +1611,11 @@
             }
             resScreen.style.display = "block";
 
-            let cellsHTML = "";
-            for (let r = 1; r <= rows; r++) {
-                for (let c = 1; c <= cols; c++) {
-                    cellsHTML += `<span>a<sub>${r}${c}</sub></span>`;
-                }
-            }
-
+            // Affichage uniquement du titre, de la description et du bouton de redémarrage
             resScreen.innerHTML = `
                 <h3 class="text-3xl font-extrabold text-white mb-4">${title}</h3>
-                <p id="result-desc" class="text-slate-300 mb-6" style="white-space: pre-line;">${desc}</p>
-                <div class="flex flex-col items-center my-6">
-                    <div style="display:inline-flex; position:relative; padding:12px 24px; border-left:3px solid #38bdf8; border-right:3px solid #38bdf8; border-radius:16px;">
-                        <div style="display:grid; grid-template-columns:repeat(${cols}, auto); gap:12px 18px; font-family:monospace; font-weight:bold; font-size:1.1rem; color:#f8fafc;">
-                            ${cellsHTML}
-                        </div>
-                    </div>
-                    <div style="margin-top:14px; font-style:italic; font-size:0.9rem; color:#94a3b8;">Représentation visuelle : format ${formatLabel}</div>
-                </div>
-                <button onclick="restartQuiz()" class="mt-6 px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg transition-all">Recommencer</button>
+                <p id="result-desc" class="text-slate-300 mb-8" style="white-space: pre-line;">${desc}</p>
+                <button onclick="restartQuiz()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg transition-all">Recommencer</button>
             `;
         }
     </script>
