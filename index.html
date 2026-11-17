@@ -1308,6 +1308,571 @@
             document.getElementById('result-screen').classList.add('hidden');
             document.getElementById('welcome-screen').classList.remove('hidden');
         }
-    </script>
+    <!-- ===================================================================== -->
+<!-- EXTENSION : BRANCHE MATRICE QUELCONQUE (16 QUESTIONS + VISUELS)       -->
+<!-- ===================================================================== -->
+<style>
+    /* Style des parenthèses et de la grille visuelle de la matrice */
+    .matrix-visual-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 25px auto;
+        padding: 15px;
+    }
+    .matrix-bracket-box {
+        display: inline-flex;
+        align-items: stretch;
+        position: relative;
+        padding: 8px 18px;
+    }
+    .matrix-bracket-box::before,
+    .matrix-bracket-box::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 14px;
+        border: 3px solid currentColor;
+    }
+    .matrix-bracket-box::before {
+        left: 0;
+        border-right: none;
+        border-radius: 16px 0 0 16px;
+    }
+    .matrix-bracket-box::after {
+        right: 0;
+        border-left: none;
+        border-radius: 0 16px 16px 0;
+    }
+    .matrix-grid-cells {
+        display: grid;
+        gap: 10px 16px;
+        padding: 6px 8px;
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        font-size: 1.05rem;
+        text-align: center;
+    }
+    .matrix-caption {
+        margin-top: 12px;
+        font-size: 0.9rem;
+        opacity: 0.85;
+        font-style: italic;
+    }
+    .qcq-ext-btn {
+        display: inline-block;
+        margin-top: 18px;
+        padding: 12px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        background-color: #2563eb;
+        color: #ffffff;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+    .qcq-ext-btn:hover {
+        background-color: #1d4ed8;
+        transform: translateY(-1px);
+    }
+    .qcq-ext-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 15px;
+        margin: 8px 0;
+        border: 1px solid rgba(128, 128, 128, 0.3);
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: left;
+    }
+    .qcq-ext-option:hover {
+        background-color: rgba(37, 99, 235, 0.08);
+    }
+</style>
+
+<script>
+(function() {
+    // Base de données des 16 questions de la branche Matrice Quelconque
+    const questionsQuelconque = [
+        {
+            id: "qcq_q1",
+            text: "Je préfère :",
+            type: "single",
+            options: [
+                { label: "Grosse boîte supplément soirée commerciale", H: 2, L: 0 },
+                { label: "Boîte techno / rave / teuf", H: 0, L: 1 },
+                { label: "Soirée chill sur les quais", H: 1, L: 1 },
+                { label: "Soirée chill à l'appart", H: 0, L: 1 }
+            ]
+        },
+        {
+            id: "qcq_q2",
+            text: "Je suis à la salle et je vois un mec qui fait un exercice n'importe comment :",
+            type: "single",
+            options: [
+                { label: "J'ignore / je dis rien puisque anxiété sociale", H: 0, L: 0 },
+                { label: "Je rigole", H: 1, L: 0 },
+                { label: "Je snap ce geush", H: 2, L: 0 },
+                { label: "Je vais le voir et lui explique gentiment", H: 0, L: 1 }
+            ]
+        },
+        {
+            id: "qcq_q3",
+            text: "Je suis très actif sur Insta :",
+            type: "multiple",
+            options: [
+                { label: "Je poste fréquemment des story", H: 2, L: 0 },
+                { label: "Je poste fréquemment des post", H: 3, L: 0 },
+                { label: "J'accumule les post et les story à la une à travers les années", H: 1, L: 0 },
+                { label: "Mon téléphone ne fait pas tourner Insta", H: -2, L: 0 },
+                { label: "Pas vraiment", H: 0, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q4",
+            text: "Quand je vais en soirée, je fais :",
+            type: "multiple",
+            options: [
+                { label: "Une petite story", H: 1, L: 0 },
+                { label: "Un petit post", H: 2, L: 0 },
+                { label: "Rien de spécial", H: 0, L: 0 },
+                { label: "J'ai même pas pris de photo", H: 0, L: 1 },
+                { label: "Je vais pas en soirée", H: -1, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q5",
+            text: "Une granny oscillante traverse la route :",
+            type: "multiple",
+            options: [
+                { label: "Je fais rien car anxiété sociale", H: 0, L: 0 },
+                { label: "Je fais rien car blc de cette tchoin", H: 1, L: 0 },
+                { label: "Je l'aide", H: 0, L: 1 }
+            ]
+        },
+        {
+            id: "qcq_q6",
+            text: "J'ai très envie de caguer (faire caca) à la BU :",
+            type: "multiple",
+            options: [
+                { label: "C'est que les hallouf qui font caca à la BU", H: 2, L: 0 },
+                { label: "J'ai peur de choper une hépatite si j'y vais", H: 1, L: 0 },
+                { label: "Flemme / j'aime pas chier autre part que chez moi", H: 0, L: 0 },
+                { label: "J'y vais", H: -1, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q7",
+            text: "Mon pote a fait un pet foireux (slip souillé) :",
+            type: "multiple",
+            options: [
+                { label: "Je me marre puis le couvre", H: 0, L: 2 },
+                { label: "Je le couvre", H: 0, L: 1 },
+                { label: "Je me marre puis je le laisse dans sa merde (littéralement)", H: 1, L: 0 },
+                { label: "Je snap ce golem", H: 2, L: 0 },
+                { label: "M. Gamelon le saura le lendemain", H: 0, L: 0, forceColonne: true }
+            ]
+        },
+        {
+            id: "qcq_q8",
+            text: "Je pète en cours ; le prof accuse mon pote :",
+            type: "multiple",
+            options: [
+                { label: "Je me dénonce", H: 0, L: 1 },
+                { label: "Je garde le silence", H: 0, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q9",
+            text: "Mon pote me taxe régulièrement des feuilles. Il est 8h. J'en ai 3. Il m'en demande une :",
+            type: "multiple",
+            options: [
+                { label: "Je donne (en l'insultant)", H: 0, L: 1 },
+                { label: "Je donne rien à ce sarce", H: 0, L: 0 },
+                { label: "Je lui donne une demi-feuille simple, ce charclo mérite pas plus", H: 1, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q10",
+            text: "Je suis ce pote :",
+            type: "multiple",
+            options: [
+                { label: "Oui", H: 0, L: -1 },
+                { label: "Non", H: 0, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q11",
+            text: "J'ai déjà lu un livre de philosophie par intérêt personnel (hors obligations ou conseils scolaires) :",
+            type: "single",
+            options: [
+                { label: "Oui", H: 0, L: 1 },
+                { label: "Non", H: 0, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q12",
+            text: "J'ai déjà été suffisamment impacté (bouleversé) par une œuvre musicale / picturale / cinématographique pour qu'elle affecte ma perception sur plusieurs aspects de la vie / mes valeurs :",
+            type: "single",
+            options: [
+                { label: "Oui", H: 0, L: 2 },
+                { label: "Non", H: 0, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q13",
+            text: "Ça s'embrouille sur le groupe classe sur le design du pull :",
+            type: "single",
+            options: [
+                { label: "J'apaise les tensions et apporte des solutions", H: -1, L: 0 },
+                { label: "Je jette de l'huile sur le feu", H: 0, L: 0 },
+                { label: "Je tente de créer une guerre civile intra-PT", H: 2, L: 0 },
+                { label: "J'envoie une vidéo de biche", H: 1, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q14",
+            text: "Je pose une question à Lambert en cours avant de me faire absolument crucifier :",
+            type: "single",
+            options: [
+                { label: "Je ferme ma grande bouche pour toujours", H: 0, L: 0 },
+                { label: "Balek de ce sarce je pose une question si je veux", H: 1, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q15",
+            text: "Je me fais massacrer en colle supplément « vous êtes vraiment une star vous » :",
+            type: "single",
+            options: [
+                { label: "Je pleure", H: 0, L: -1 },
+                { label: "Maxi gênant, je déguste mon seum jusqu'au prochain fist (5h plus tard)", H: 0, L: 1 },
+                { label: "À force j'ai l'habitude", H: 0, L: -1 },
+                { label: "Blc mentalité prépa", H: 0, L: 0 }
+            ]
+        },
+        {
+            id: "qcq_q16",
+            text: "Le reel du nouveau compte PTSI meme (abonnés pp Israël) :",
+            type: "single",
+            options: [
+                { label: "Est méga problématique", H: 0, L: 1 },
+                { label: "Je capte qu'on trouve ça chaud mais je reste neutre", H: 0, L: 0 },
+                { label: "On peut rire non ?", H: 0, L: -2 }
+            ]
+        }
+    ];
+
+    let qcqIndex = 0;
+    let scoreH = 0;
+    let scoreL = 0;
+    let forceColonneTriggered = false;
+    let inQuelconqueBranch = false;
+
+    // Générateur de schéma visuel de la matrice
+    function buildMatrixVisualHTML(rows, cols, formatLabel) {
+        let cellsHTML = "";
+        for (let r = 1; r <= rows; r++) {
+            for (let c = 1; c <= cols; c++) {
+                cellsHTML += `<span>a<sub>${r}${c}</sub></span>`;
+            }
+        }
+        return `
+            <div class="matrix-visual-wrapper">
+                <div class="matrix-bracket-box">
+                    <div class="matrix-grid-cells" style="grid-template-columns: repeat(${cols}, auto);">
+                        ${cellsHTML}
+                    </div>
+                </div>
+                <div class="matrix-caption">Représentation visuelle : format ${formatLabel}</div>
+            </div>
+        `;
+    }
+
+    // Affichage de la question courante de la branche Quelconque
+    function renderQuelconqueQuestion() {
+        const q = questionsQuelconque[qcqIndex];
+        const container = document.getElementById("quiz-container") || document.querySelector(".quiz-box") || document.body;
+        
+        // Masquer l'écran de résultat s'il était affiché
+        const resScreen = document.getElementById("result-screen");
+        if (resScreen) resScreen.style.display = "none";
+
+        let qScreen = document.getElementById("qcq-branch-screen");
+        if (!qScreen) {
+            qScreen = document.createElement("div");
+            qScreen.id = "qcq-branch-screen";
+            qScreen.style.maxWidth = "650px";
+            qScreen.style.margin = "30px auto";
+            qScreen.style.padding = "25px";
+            container.appendChild(qScreen);
+        }
+        qScreen.style.display = "block";
+
+        const inputType = q.type === "multiple" ? "checkbox" : "radio";
+        const hintHTML = q.type === "multiple" 
+            ? `<p style="font-size: 0.85rem; opacity: 0.75; margin-bottom: 12px;">Plusieurs réponses possibles</p>` 
+            : "";
+
+        let optionsHTML = q.options.map((opt, idx) => `
+            <label class="qcq-ext-option">
+                <input type="${inputType}" name="qcq_opt" value="${idx}">
+                <span>${opt.label}</span>
+            </label>
+        `).join("");
+
+        qScreen.innerHTML = `
+            <div style="font-size: 0.85rem; opacity: 0.7; margin-bottom: 8px;">
+                Branche Matrice Quelconque — Question ${qcqIndex + 1} / ${questionsQuelconque.length}
+            </div>
+            <h2 style="margin-bottom: 10px;">${q.text}</h2>
+            ${hintHTML}
+            <div>${optionsHTML}</div>
+            <button id="qcq-next-btn" class="qcq-ext-btn">Suivant</button>
+        `;
+
+        document.getElementById("qcq-next-btn").onclick = function() {
+            const checked = Array.from(qScreen.querySelectorAll('input[name="qcq_opt"]:checked'));
+            if (checked.length === 0) {
+                alert("Sélectionne au moins une réponse avant de continuer !");
+                return;
+            }
+            checked.forEach(input => {
+                const chosen = q.options[parseInt(input.value, 10)];
+                scoreH += (chosen.H || 0);
+                scoreL += (chosen.L || 0);
+                if (chosen.forceColonne) {
+                    forceColonneTriggered = true;
+                }
+            });
+
+            qcqIndex++;
+            if (qcqIndex < questionsQuelconque.length) {
+                renderQuelconqueQuestion();
+            } else {
+                evaluateQuelconqueOutcome();
+            }
+        };
+    }
+
+    // Évaluation finale des 11 issues possibles
+    function evaluateQuelconqueOutcome() {
+        const qScreen = document.getElementById("qcq-branch-screen");
+        if (qScreen) qScreen.style.display = "none";
+        inQuelconqueBranch = false;
+
+        const ecart = Math.abs(scoreH - scoreL);
+        const majoriteH = scoreH >= scoreL;
+
+        // Cas spécial Q7 ("M. Gamelon le saura le lendemain") -> Automatiquement colonne
+        if (forceColonneTriggered) {
+            showQuelconqueFinalScreen(
+                "Tu es une Matrice Colonne",
+                "Une seule colonne verticale pure et dure. M. Gamelon est déjà au courant.",
+                4, 1, "n × 1 (Colonne)"
+            );
+            return;
+        }
+
+        // 1. Écart <= 1 : Retour automatique dans la catégorie des matrices carrées
+        if (ecart <= 1) {
+            if (typeof renderFinalScreen === "function") {
+                renderFinalScreen("carree_intermediaire");
+            } else {
+                showQuelconqueFinalScreen(
+                    "Tu es finalement une Matrice Carrée !",
+                    "Tes tendances H et L s'équilibrent parfaitement (écart ≤ 1). Tu bascules dans la catégorie des Matrices Carrées !",
+                    3, 3, "n × n (Carrée)", true
+                );
+            }
+            return;
+        }
+
+        // 2. Écart >= 12 : Ligne ou Colonne simple
+        if (ecart >= 12) {
+            if (majoriteH) {
+                showQuelconqueFinalScreen(
+                    "Tu es une Matrice Colonne",
+                    "Ta hauteur est maximale (majorité H avec un écart ≥ 12). Tu es une pure matrice colonne.",
+                    4, 1, "n × 1 (Colonne)"
+                );
+            } else {
+                showQuelconqueFinalScreen(
+                    "Tu es une Matrice Ligne",
+                    "Ta largeur est maximale (majorité L avec un écart ≥ 12). Tu es une pure matrice ligne.",
+                    1, 4, "1 × n (Ligne)"
+                );
+            }
+            return;
+        }
+
+        // 3. Écart entre 10 et 11 : Rapport 1/4 (facteur 4)
+        if (ecart >= 10 && ecart <= 11) {
+            if (majoriteH) {
+                showQuelconqueFinalScreen(
+                    "Tu es une Matrice Quelconque en 4X par X",
+                    "Rapport de proportion 1/4 avec une hauteur dominante (4 fois plus de lignes que de colonnes).",
+                    4, 1, "4X × X"
+                );
+            } else {
+                showQuelconqueFinalScreen(
+                    "Tu es une Matrice Quelconque en X par 4X",
+                    "Rapport de proportion 1/4 avec une largeur dominante (4 fois plus de colonnes que de lignes).",
+                    1, 4, "X × 4X"
+                );
+            }
+            return;
+        }
+
+        // 4. Écart entre 7 et 9 : Rapport 1/3 (facteur 3)
+        if (ecart >= 7 && ecart <= 9) {
+            if (majoriteH) {
+                showQuelconqueFinalScreen(
+                    "Tu es une Matrice Quelconque en 3X par X",
+                    "Rapport de proportion 1/3 avec une hauteur dominante (3 fois plus de lignes que de colonnes).",
+                    3, 1, "3X × X"
+                );
+            } else {
+                showQuelconqueFinalScreen(
+                    "Tu es une Matrice Quelconque en X par 3X",
+                    "Rapport de proportion 1/3 avec une largeur dominante (3 fois plus de colonnes que de lignes).",
+                    1, 3, "X × 3X"
+                );
+            }
+            return;
+        }
+
+        // 5. Écart entre 4 et 6 : Rapport 1/2 (facteur 2)
+        if (ecart >= 4 && ecart <= 6) {
+            if (majoriteH) {
+                showQuelconqueFinalScreen(
+                    "Tu es une Matrice Quelconque en 2X par X",
+                    "Rapport de proportion 1/2 avec une hauteur dominante (2 fois plus de lignes que de colonnes).",
+                    4, 2, "2X × X"
+                );
+            } else {
+                showQuelconqueFinalScreen(
+                    "Tu es une Matrice Quelconque en X par 2X",
+                    "Rapport de proportion 1/2 avec une largeur dominante (2 fois plus de colonnes que de lignes).",
+                    2, 4, "X × 2X"
+                );
+            }
+            return;
+        }
+
+        // 6. Écart égal à 2 ou 3 : Format X par X - 1
+        if (majoriteH) {
+            showQuelconqueFinalScreen(
+                "Tu es une Matrice Quelconque en X par X - 1",
+                "Presque carrée, mais avec une ligne supplémentaire en hauteur (écart de 1 entre les lignes et les colonnes).",
+                4, 3, "X × (X - 1)"
+            );
+        } else {
+            showQuelconqueFinalScreen(
+                "Tu es une Matrice Quelconque en X - 1 par X",
+                "Presque carrée, mais avec une colonne supplémentaire en largeur (écart de 1 entre les lignes et les colonnes).",
+                3, 4, "(X - 1) × X"
+            );
+        }
+    }
+
+    // Affichage de l'écran personnalisé avec le visuel et le bouton "Continuer le test"
+    function showQuelconqueFinalScreen(title, desc, rows, cols, formatLabel, isCarreeRedirect = false) {
+        const resScreen = document.getElementById("result-screen");
+        if (!resScreen) return;
+
+        resScreen.style.display = "block";
+        const titleEl = document.getElementById("result-title");
+        const descEl = document.getElementById("result-desc");
+
+        if (titleEl) titleEl.textContent = title;
+        if (descEl) descEl.textContent = desc;
+
+        // Nettoyer d'anciens visuels ou boutons s'ils existent
+        const oldVis = document.getElementById("qcq-matrix-visual");
+        if (oldVis) oldVis.remove();
+        const oldContinue = document.getElementById("qcq-continue-next-phase");
+        if (oldContinue) oldContinue.remove();
+
+        const visualDiv = document.createElement("div");
+        visualDiv.id = "qcq-matrix-visual";
+        visualDiv.innerHTML = buildMatrixVisualHTML(rows, cols, formatLabel);
+
+        const continueBtn = document.createElement("button");
+        continueBtn.id = "qcq-continue-next-phase";
+        continueBtn.className = "qcq-ext-btn";
+        continueBtn.textContent = isCarreeRedirect 
+            ? "Continuer vers le test Matrice Carrée" 
+            : "Continuer le test (Déterminer les dimensions X)";
+        
+        continueBtn.onclick = function() {
+            if (isCarreeRedirect && typeof startCarreeBranch === "function") {
+                startCarreeBranch();
+            } else {
+                alert("La suite du test (détermination exacte de la dimension X) arrive dans le prochain questionnaire !");
+            }
+        };
+
+        if (descEl && descEl.parentNode) {
+            descEl.parentNode.insertBefore(visualDiv, descEl.nextSibling);
+            visualDiv.parentNode.insertBefore(continueBtn, visualDiv.nextSibling);
+        } else {
+            resScreen.appendChild(visualDiv);
+            resScreen.appendChild(continueBtn);
+        }
+    }
+
+    // Détection automatique de l'écran "Matrice Quelconque" standard du tronc commun
+    function attachBranchTrigger() {
+        const resScreen = document.getElementById("result-screen");
+        if (!resScreen) return;
+
+        const observer = new MutationObserver(() => {
+            if (inQuelconqueBranch) return;
+            if (resScreen.style.display === "none") return;
+
+            const titleEl = document.getElementById("result-title");
+            const descEl = document.getElementById("result-desc");
+            if (!titleEl) return;
+
+            const titleText = (titleEl.textContent || "").toLowerCase();
+            const descText = (descEl ? descEl.textContent || "" : "").toLowerCase();
+
+            // On cible uniquement la Matrice Quelconque standard (pas les pieds, pas les résultats déjà générés avec "en ")
+            const isStandardQuelconque = titleText.includes("quelconque") 
+                && !titleText.includes("en ") 
+                && !descText.includes("pied");
+
+            if (isStandardQuelconque && !document.getElementById("start-qcq-branch-btn")) {
+                const startBtn = document.createElement("button");
+                startBtn.id = "start-qcq-branch-btn";
+                startBtn.className = "qcq-ext-btn";
+                startBtn.textContent = "Continuer le test (Affiner ma Matrice Quelconque)";
+                startBtn.onclick = function() {
+                    inQuelconqueBranch = true;
+                    qcqIndex = 0;
+                    scoreH = 0;
+                    scoreL = 0;
+                    forceColonneTriggered = false;
+                    startBtn.remove();
+                    renderQuelconqueQuestion();
+                };
+                resScreen.appendChild(startBtn);
+            }
+        });
+
+        observer.observe(resScreen, { attributes: true, childList: true, subtree: true });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", attachBranchTrigger);
+    } else {
+        attachBranchTrigger();
+    }
+})();
+</script>
 </body>
 </html>
