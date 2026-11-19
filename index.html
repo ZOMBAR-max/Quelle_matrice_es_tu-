@@ -1270,7 +1270,7 @@
                 let warningText = "";
                 if (X === 1 && profile.isRectBecomingLineOrColInDim1) {
                     const formeApparente = (cols === 1) ? "matrice colonne" : "matrice ligne";
-                    warningText = `⚠️ Attention : avec ta dimension X = 1, tes dimensions (${rows} par ${cols}) te donnent visuellement l'apparence d'une ${formeApparente}. Tu n'en possèdes toutefois pas les attributs : tu conserves uniquement les caractéristiques de ta ${profile.name}, simplement en format réduit.`;
+                    warningText = `⚠️ Attention : tes dimensions (${rows} par ${cols}) te donnent visuellement l'apparence d'une ${formeApparente}. Tu n'en possèdes toutefois pas les attributs : tu conserves uniquement les caractéristiques de ta ${profile.name}, simplement en format réduit.`;
                 }
 
                 catalogue75Resultats[resultId] = {
@@ -1281,8 +1281,8 @@
                     rows: rows,
                     cols: cols,
                     icon: profile.icon,
-                    title: `${profile.name} (${rows} × ${cols})`,
-                    description: `Voilà la matrice que tu es :\nTu es une ${profile.name} de dimension ${rows} par ${cols} (avec X = ${X}).\n\nCaractéristiques conservées :\n${profile.traits}`,
+                    title: `${profile.name} en ${rows} × ${cols}`,
+                    description: `\nTu es une ${profile.name}  donc de dimension ${rows} par ${cols}.\n\nCaractéristiques conservées :\n${profile.traits}`,
                     warning: warningText
                 };
             });
