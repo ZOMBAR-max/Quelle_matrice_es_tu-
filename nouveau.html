@@ -1174,9 +1174,9 @@
         // --- 6. TEST COEFFICIENTS FIXES VS VARIABLES (QUANTIFICATEUR V — 12 QUESTIONS À COMPLÉTER) ---
         // MODIFIE ICI TES 4 SEUILS POUR LE QUANTIFICATEUR V :
         const SEUILS_QUANTIFICATEUR_V = {
-            seuil0VarMax: 4,     // Si V <= seuil0VarMax : 0 coefficient variable par zone (coefficients fixes)
-            seuil1VarMax: 9,     // Si V est entre (seuil0VarMax + 1) et seuil1VarMax : max 1 coeff variable par zone
-            seuil2VarMax: 15     // Si V est entre (seuil1VarMax + 1) et seuil2VarMax : max 2 coeffs variables par zone
+            seuil0VarMax: 3,     // Si V <= seuil0VarMax : 0 coefficient variable par zone (coefficients fixes)
+            seuil1VarMax: 7,     // Si V est entre (seuil0VarMax + 1) et seuil1VarMax : max 1 coeff variable par zone
+            seuil2VarMax: 12     // Si V est entre (seuil1VarMax + 1) et seuil2VarMax : max 2 coeffs variables par zone
                                  // Au-delà (> seuil2VarMax) : max 3 coeffs variables par zone
         };
 
@@ -1184,110 +1184,129 @@
         const questionsCoeffV = [
             {
                 id: "coeffV_q1",
-                text: "Question V #1 (à remplir) :",
+                text: "Quand je me recalle les yeuks (testicules) dans le slibard (ou tout autre apapreil génital #inclusivité #yenaurapourtoutlemonde):",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "J'y vais à la mano direct dans le falzar", V: 2 },
+                    { label: "Technique de la poche", V: 0 },
+                    { label: "Je tanke", V: -1 },
+                    { label: "J'envoie des mouvements de jambe à la Mickael Jackson", V: 1 }
                 ]
             },
             {
                 id: "coeffV_q2",
-                text: "Question V #2 (à remplir) :",
+                text: "Je dors:",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "nu comme un ver", V: 1 },
+                    { label: "En sous-vêtements", V: 0 },
+                    { label: "nu comme un ver mais avec des chaussettes (???)", V: 2 },
+                    { label: "Juste bas de pyjama", V: 0 },
+                    { label: "Haut de pyjama + sous-vêtements", V: -1 },
+                    { label: "Haut de pyjama seul, sans sous-vêtements", V: 2 },
+                    { label: "Full pyjama", V: -1 }
                 ]
             },
             {
                 id: "coeffV_q3",
-                text: "Question V #3 (à remplir) :",
+                text: "Mon humour se construit sur la gêne qu'il crée :",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "Non", V: -1 },
+                    { label: "Un peu", V: 0 },
+                    { label: "En partie", V: 1 },
+                    { label: "Exclusivement", V: 2 }
                 ]
             },
             {
                 id: "coeffV_q4",
-                text: "Question V #4 (à remplir) :",
+                text: "Ma meuf/Mon mec me met inopinément un doigt dans l'cul pendant l'acte:",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "Je stoppe tout", V: -1 },
+                    { label: "Je fais belek il s'est rien passé (quitte à le mentionner plus tard)", V: 0 },
+                    { label: "Je l'invite à réitérer pour être sûr", V: 1 },
+                    { label: "Je sais pas (Pour tous les non baiseurs imaginez au moins plutôt que de sauter sur cette réponse)", V: -3 }
                 ]
             },
             {
                 id: "coeffV_q5",
-                text: "Question V #5 (à remplir) :",
+                text: "J'ai déjà fait l'accent d'une minorité devant la minoritée concernée :",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "Oui", V: 1 },
+                    { label: "Non", V: 0 }
                 ]
             },
             {
                 id: "coeffV_q6",
-                text: "Question V #6 (à remplir) :",
+                text: "Un SDF me parle dans la rue :",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "Je baisse les yeux et enfonce mes écouteurs dans mes oreilles", V: 0 },
+                    { label: "Je lui répond", V: 1 },
+                    { label: "Je lui vole sa thune", V: 2 }
                 ]
             },
             {
                 id: "coeffV_q7",
-                text: "Question V #7 (à remplir) :",
+                text: "J'ai la chiasse (ou un vague présage...) avant un DS :",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "J'y vais pas et je trouve une excuse bidon", V: 0 },
+                    { label: "J'y vais", V: 1 },
+                    { label: "J'y vais pas et je dis cash pistache au prof que j'avais le baltrou en feu", V: 2 }
                 ]
             },
             {
                 id: "coeffV_q8",
-                text: "Question V #8 (à remplir) :",
+                text: "Je suis en train de me br et je commence à soupçonner que Maria à 5km de chez moi a piraté mon bigo :",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "Jsp je ne me br pas (oui oui bien sûr...)", V: 0 },
+                    { label: "J'ignore et persévère mon ouvrage", V: 1 },
+                    { label: "Je prends la vago et vais la voir en face à face pour mettre les choses au clair", V: 3 }
                 ]
             },
             {
                 id: "coeffV_q9",
-                text: "Question V #9 (à remplir) :",
+                text: "Au week end d'inté je me suis fait :",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "Rien", V: 0 },
+                    { label: "Je suis pas venu", V: -1 },
+                    { label: "Buzz cut", V: 1 },
+                    { label: "PT dans le crâne", V: 2 }
                 ]
             },
             {
                 id: "coeffV_q10",
-                text: "Question V #10 (à remplir) :",
+                text: "J'ai déjà joué à des jeux d'argent :",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "Non", V: 0 },
+                    { label: "Oui", V: 1 },
+                    { label: "Oui supplément mes pertes globales s'élèvent à plus de 100 euros", V: 2 },
+                    { label: "Oui supplément strip poker", V: 2 }
                 ]
             },
             {
                 id: "coeffV_q11",
-                text: "Question V #11 (à remplir) :",
+                text: "On me propose une proba de fou furieux (un truc que j'aimerais pas faire) :",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "Je refuse", V: -1 },
+                    { label: "Je prends le risque par appât de la reverse mais si je perds je ferais pas", V: -3 },
+                    { label: "Je prends le risque par appât de la reverse et si je perds je ferais", V: 2 },
                 ]
             },
             {
                 id: "coeffV_q12",
-                text: "Question V #12 (à remplir) :",
+                text: "Mon groupe de potes me propose d'aller en vacances mais ça pue le bourbier et la garde à vue à 4 :",
                 type: "single",
                 options: [
-                    { label: "Option 1", V: 0 },
-                    { label: "Option 2", V: 0 }
+                    { label: "J'ai déjà fait ma valise", V: 1 },
+                    { label: "Jdis non", V: 0 }
                 ]
             }
         ];
