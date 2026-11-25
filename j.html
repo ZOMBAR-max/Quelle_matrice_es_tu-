@@ -1,0 +1,2822 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quelle matrice es-tu ?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+        #result-desc {
+            white-space: pre-line;
+        }
+        /* Grandes parenthèses bleues autour de la matrice finale */
+        .matrix-wrapper {
+            display: inline-flex;
+            align-items: stretch;
+            justify-content: center;
+            margin: 0 auto;
+            padding: 0.5rem 0.75rem;
+            min-width: max-content;
+        }
+        .matrix-paren-left,
+        .matrix-paren-right {
+            width: 16px;
+            min-width: 16px;
+            flex: 0 0 16px;
+        }
+        .matrix-paren-left {
+            border-top: 3.5px solid #38bdf8;
+            border-bottom: 3.5px solid #38bdf8;
+            border-left: 3.5px solid #38bdf8;
+            border-top-left-radius: 18px;
+            border-bottom-left-radius: 18px;
+            margin-right: 0.75rem;
+        }
+        .matrix-paren-right {
+            border-top: 3.5px solid #38bdf8;
+            border-bottom: 3.5px solid #38bdf8;
+            border-right: 3.5px solid #38bdf8;
+            border-top-right-radius: 18px;
+            border-bottom-right-radius: 18px;
+            margin-left: 0.75rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- En-tête épuré -->
+    <header class="w-full py-5 px-6 border-b border-slate-800/80 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-2xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <span class="text-lg font-bold font-mono">M</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-lg tracking-tight text-white">Quelle matrice es-tu ?</h1>
+                </div>
+            </div>
+            <div id="progress-indicator" class="hidden text-xs font-mono text-indigo-400 bg-indigo-950/60 px-3 py-1.5 rounded-full border border-indigo-800/40">
+                Question <span id="current-step-num">1</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteneur Principal -->
+    <main class="w-full max-w-2xl mx-auto px-4 py-8 flex-grow flex flex-col justify-center">
+
+        <!-- Écran d'accueil -->
+        <div id="welcome-screen" class="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-xl text-center fade-in">
+            <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-3xl">
+                📐
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-bold mb-4 tracking-tight">Quelle matrice es-tu ?</h2>
+            <p class="text-slate-400 text-sm sm:text-base mb-8 leading-relaxed max-w-md mx-auto">
+                Réponds honnêtement chacal sinon ça sera encore plus inutile que ça l'est déjà
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
+                    Commencer le test
+                </button>
+            </div>
+        </div>
+
+        <!-- Conteneur des Questions -->
+        <div id="quiz-container" class="hidden bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl fade-in">
+            
+            <!-- Barre de progression fluide -->
+            <div class="w-full bg-slate-800 h-1.5 rounded-full mb-7 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-violet-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+
+            <!-- Intitulé de la question -->
+            <div class="mb-6">
+                <h3 id="question-text" class="text-lg sm:text-xl font-semibold text-white leading-snug">Chargement...</h3>
+                <p id="question-hint" class="hidden text-xs text-slate-400 mt-1.5">Plusieurs réponses possibles</p>
+            </div>
+
+            <!-- Options de réponses -->
+            <div id="options-container" class="space-y-3 mb-8">
+                <!-- Généré dynamiquement en JS -->
+            </div>
+
+            <!-- Navigation bas de question -->
+            <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                <button id="prev-btn" onclick="prevQuestion()" class="px-4 py-2.5 text-sm text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                    ← Précédent
+                </button>
+                <button id="next-btn" onclick="handleNext()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-xl shadow-md shadow-indigo-600/20 transition-all">
+                    Suivant →
+                </button>
+            </div>
+        </div>
+
+        <!-- Écran de Résultat -->
+        <div id="result-screen" class="hidden bg-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl backdrop-blur-xl text-center fade-in">
+            <div id="result-icon" class="w-20 h-20 mx-auto mb-6 rounded-3xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-4xl shadow-xl">
+                ✨
+            </div>
+            <p id="result-badge" class="text-xs uppercase tracking-widest text-indigo-400 font-mono mb-2">Résultat de l'analyse</p>
+            <h3 id="result-title" class="text-3xl sm:text-4xl font-extrabold text-white mb-4">Matrice Carrée</h3>
+            <p id="result-desc" class="text-slate-300 text-sm sm:text-base mb-6 leading-relaxed max-w-lg mx-auto">
+                Description du profil matriciel...
+            </p>
+
+            <!-- Rendu visuel final de la matrice exacte de la personne -->
+            <div id="matrix-visual-container" class="hidden max-w-full mx-auto mb-8 p-6 rounded-2xl bg-slate-950/75 border border-sky-500/30 shadow-inner overflow-x-auto">
+                <p class="text-xs uppercase tracking-widest text-sky-400 font-mono mb-4">Ta matrice exacte</p>
+                <div id="matrix-render-box" class="flex items-center my-2 w-full overflow-x-auto"></div>
+            </div>
+
+            <!-- Statistiques (tronc commun) -->
+            <div id="stats-container" class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8 p-4 bg-slate-950/60 rounded-2xl border border-slate-800/80">
+                <div class="text-center p-3 rounded-xl bg-indigo-950/30 border border-indigo-900/30">
+                    <span class="block text-xs uppercase tracking-wider text-indigo-400 font-mono mb-1">Carré 🔲</span>
+                    <span id="score-carre-val" class="text-2xl font-bold font-mono text-white">0</span>
+                </div>
+                <div class="text-center p-3 rounded-xl bg-violet-950/30 border border-violet-900/30">
+                    <span class="block text-xs uppercase tracking-wider text-violet-400 font-mono mb-1">Quelconque 🔺</span>
+                    <span id="score-triangle-val" class="text-2xl font-bold font-mono text-white">0</span>
+                </div>
+            </div>
+
+            <!-- Boutons d'action dynamiques -->
+            <div id="result-buttons" class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button onclick="restartQuiz()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all">
+                    Recommencer le test
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Pied de page -->
+    <footer class="w-full py-5 text-center text-xs text-slate-600 border-t border-slate-900/80">
+        <p>Test de personnalité matricielle</p>
+    </footer>
+
+    <script>
+        // --- 1. TRONC COMMUN ---
+        const questions = [
+            {
+                id: "q1",
+                text: "J'ai déjà possédé un hand-spinner :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 1 }
+                ],
+                next: "q2"
+            },
+            {
+                id: "q2",
+                text: "J'ai déjà été collé (au collège/lycée) :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q3"
+            },
+            {
+                id: "q3",
+                text: "Quand ça parle politique :",
+                type: "single",
+                options: [
+                    { label: "Je parle pas puisque j'ai pas d'avis", carre: 2, triangle: 0 },
+                    { label: "Je parle pas puisque j'ai pas envie", carre: 0, triangle: 0 },
+                    { label: "Je m'exprime", carre: 0, triangle: 1 }
+                ],
+                next: "q4"
+            },
+            {
+                id: "q4",
+                text: "J'aime les pieds :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0, next: "q32_pieds" },
+                    { label: "Non", carre: 0, triangle: 0, next: "q5" }
+                ]
+            },
+            {
+                id: "q5",
+                text: "J'ai déjà embrassé quelqu'un :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q6"
+            },
+            {
+                id: "q6",
+                text: "J'ai déjà consommé de l'alcool :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 1 }
+                ],
+                next: "q7"
+            },
+            {
+                id: "q7",
+                text: "J'ai déjà pratiqué du sport en club :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q8"
+            },
+            {
+                id: "q8",
+                text: "J'ai déjà regardé du porno :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 2 }
+                ],
+                next: "q9"
+            },
+            {
+                id: "q9",
+                text: "Le plot twist de Shutter Island était :",
+                type: "single",
+                options: [
+                    { label: "Excellent", carre: 2, triangle: 0 },
+                    { label: "Bon", carre: 1, triangle: 0 },
+                    { label: "OK / Meh", carre: 0, triangle: 1 },
+                    { label: "Pas vu", carre: 0, triangle: 0 }
+                ],
+                next: "q10"
+            },
+            {
+                id: "q10",
+                text: "Interstellar est :",
+                type: "single",
+                options: [
+                    { label: "Très bon", carre: 1, triangle: 0 },
+                    { label: "Bon", carre: 0, triangle: 1 },
+                    { label: "Pas très bon", carre: 1, triangle: 0 },
+                    { label: "Pas vu", carre: 0, triangle: 0 }
+                ],
+                next: "q11"
+            },
+            {
+                id: "q11",
+                text: "Je m'intéresse au moins à 1 art :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0, next: "q12" },
+                    { label: "Non", carre: 2, triangle: 0, next: "q16" }
+                ]
+            },
+            {
+                id: "q12",
+                text: "Lequel ?",
+                type: "multiple",
+                options: [
+                    { label: "Peinture", carre: 0, triangle: 1, key: "peinture" },
+                    { label: "Sculpture", carre: 0, triangle: 3, key: "sculpture" },
+                    { label: "Théâtre", carre: 0, triangle: 2, key: "theatre" },
+                    { label: "Animation", carre: 0, triangle: 1, key: "animation" },
+                    { label: "Cinéma", carre: 0, triangle: 1, key: "cinema" },
+                    { label: "Littérature", carre: 0, triangle: 1, key: "litterature" },
+                    { label: "Musique", carre: 0, triangle: 0, key: "musique" },
+                    { label: "Jeux vidéo", carre: 0, triangle: 0, key: "jeuxvideo" },
+                    { label: "Photo", carre: 0, triangle: 1, key: "Photo" },
+                    { label: "Danse (qui n'est pas un art btw)", carre: 0, triangle: 0, key: "Danse" }
+                ],
+                next: "dynamic_art"
+            },
+            {
+                id: "q13_1",
+                text: "J'ai déjà dit la phrase « j'écoute de tout » :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q13_2"
+            },
+            {
+                id: "q13_2",
+                text: "Quand je veux découvrir un artiste j'écoute :",
+                type: "single",
+                options: [
+                    { label: "Ses top titres", carre: 2, triangle: 0 },
+                    { label: "Ses albums", carre: 0, triangle: 1 }
+                ],
+                next: "q13_3"
+            },
+            {
+                id: "q13_3",
+                text: "J'écoute en majorité du rap :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 3, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q13_4"
+            },
+            {
+                id: "q13_4",
+                text: "Taylor Swift m'inspire :",
+                type: "single",
+                options: [
+                    { label: "De la bonne musique", carre: 1, triangle: 0 },
+                    { label: "Du blanc de poulet sans sauce sans sel", carre: 0, triangle: 0 }
+                ],
+                next: "q13_5"
+            },
+            {
+                id: "q13_5",
+                text: "Parmi : Jazz, électro, disco, house, rock des années 60, j'écoute activement :",
+                type: "single",
+                options: [
+                    { label: "0", carre: 2, triangle: 0 },
+                    { label: "1", carre: 0, triangle: 1 },
+                    { label: "2 ou 3", carre: 0, triangle: 2 },
+                    { label: "+3", carre: 0, triangle: 3 }
+                ],
+                next: "after_music"
+            },
+            {
+                id: "q14_1",
+                text: "Combien de genres de jeux vidéo m'intéressent ?",
+                type: "single",
+                options: [
+                    { label: "1 ou 2", carre: 2, triangle: 0, gamingPositive: true },
+                    { label: "Plus de 2", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "q14_2"
+            },
+            {
+                id: "q14_2",
+                text: "Je joue activement à LoL / Valo / Fortnite :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 2, triangle: 0, gamingPositive: true },
+                    { label: "Non", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "q14_3"
+            },
+            {
+                id: "q14_3",
+                text: "L'open world est sans débat le meilleur genre :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0, gamingPositive: true },
+                    { label: "Non", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "q14_4"
+            },
+            {
+                id: "q14_4",
+                text: "J'ai déjà qualifié un jeu de « Metroidvania » uniquement puisque j'y faisais des allers-retours :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0, gamingPositive: true },
+                    { label: "Non", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "q14_5"
+            },
+            {
+                id: "q14_5",
+                text: "Je n'ai pas compris la question précédente :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0, gamingPositive: true },
+                    { label: "Non", carre: 0, triangle: 0, gamingPositive: false }
+                ],
+                next: "after_gaming"
+            },
+            {
+                id: "q15_1",
+                text: "Mon top 3 réalisateurs contient Tarantino / Spielberg ou Nolan :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 2, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q15_2"
+            },
+            {
+                id: "q15_2",
+                text: "A la question sur Shutter Island j'ai répondu :",
+                type: "single",
+                options: [
+                    { label: "Excellent", carre: 3, triangle: 0 },
+                    { label: "Bon", carre: 1, triangle: 0 },
+                    { label: "OK / Meh", carre: 0, triangle: 0 },
+                    { label: "Pas vu", carre: 1, triangle: 0 }
+                ],
+                next: "q15_3"
+            },
+            {
+                id: "q15_3",
+                text: "Je sais ce qu'est l'effet Vertigo :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q16"
+            },
+            {
+                id: "q16",
+                text: "J'ai déjà dit le N-word sans être noir :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q17"
+            },
+            {
+                id: "q17",
+                text: "J'adore aller au Loft / Plouf / Azar :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 2, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q18"
+            },
+            {
+                id: "q18",
+                text: "La shatta est la meilleure musique de boîte :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q19"
+            },
+            {
+                id: "q19",
+                text: "Je maîtrise 1 ou plusieurs danses :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q20"
+            },
+            {
+                id: "q20",
+                text: "Le meilleur goût de glace c'est :",
+                type: "single",
+                options: [
+                    { label: "Chocolat / vanille / noisette", carre: 1, triangle: 0 },
+                    { label: "Pistache / menthe / fraise / framboise", carre: 0, triangle: 1 },
+                    { label: "Autre", carre: 0, triangle: 0 }
+                ],
+                next: "q21"
+            },
+            {
+                id: "q21",
+                text: "Je pense bien m'habiller (sans prétention) :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0, next: "q22_1" },
+                    { label: "Non / je ne sais pas", carre: 2, triangle: 0, next: "q23" }
+                ]
+            },
+            {
+                id: "q22_1",
+                text: "Je consomme des marques comme Pull and Bear / Adidas / Bershka / Nike (en gros fast-fashion ou des trucs sans sauce) :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 2, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q22_2"
+            },
+            {
+                id: "q22_2",
+                text: "On m'a déjà demandé si j'étais gay à cause de ma qualité vestimentaire :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 2 },
+                    { label: "Non", carre: 0, triangle: 0 },
+                    { label: "Je suis une femme est je trouve scandaleux que ce test soit fait par des hommes pour des hommes quelle société patriarcale de merde", carre: 0, triangle: 1 }
+                ],
+                next: "q22_3"
+            },
+            {
+                id: "q22_3",
+                text: "Dans ma garde-robe, on peut trouver + de 5 couleurs différentes (blanc, noir et couleurs trop proches exclues, genre bleu + bleu marine = ntm) :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q22_4"
+            },
+            {
+                id: "q22_4",
+                text: "Je possède et porte régulièrement des chaussures autres que des sneakers :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 1 },
+                    { label: "Non", carre: 1, triangle: 0 }
+                ],
+                next: "q23"
+            },
+            {
+                id: "q23",
+                text: "Je suis cisgenre (mon identité de genre = c'que j'ai entre les jambes) :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 4 }
+                ],
+                next: "q24"
+            },
+            {
+                id: "q24",
+                text: "Je suis hétéro :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 2 }
+                ],
+                next: "q25"
+            },
+            {
+                id: "q25",
+                text: "Je me coupe les cheveux moi-même (ou un pote/qqun de ma famille me les coupe) :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 2 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q26"
+            },
+            {
+                id: "q26",
+                text: "J'ai déjà minoré un DS :",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 0, triangle: 3, next: "q27" },
+                    { label: "Non", carre: 0, triangle: 0, next: "q28" }
+                ]
+            },
+            {
+                id: "q27",
+                text: "C'était français / anglais ?",
+                type: "single",
+                options: [
+                    { label: "Oui", carre: 1, triangle: 0 },
+                    { label: "Non", carre: 0, triangle: 0 }
+                ],
+                next: "q28"
+            },
+            {
+                id: "q28",
+                text: "J'ai envie d'uriner à l'after sur les quais :",
+                type: "single",
+                options: [
+                    { label: "Je me retiens", carre: 1, triangle: 0 },
+                    { label: "Je me mets à l'écart et pisse contre un mur", carre: 0, triangle: 0 },
+                    { label: "Je pisse dans la Saône", carre: 0, triangle: 1 },
+                    { label: "Je pisse dans la Saône et je suis une femme", carre: 0, triangle: 5 }
+                ],
+                next: "q29"
+            },
+            {
+                id: "q29",
+                text: "Les doudounes :",
+                type: "single",
+                options: [
+                    { label: "Je valide fort supplément les doudounes sans manches c'est carré", carre: 3, triangle: 0 },
+                    { label: "C'est carré", carre: 2, triangle: 0 },
+                    { label: "Je mets uniquement pour pas mourir en hiver", carre: 1, triangle: 0 },
+                    { label: "Plutôt mourir que de porter ça", carre: 0, triangle: 1 }
+                ],
+                next: "q30"
+            },
+            {
+                id: "q30",
+                text: "J'ai :",
+                type: "single",
+                options: [
+                    { label: "Le permis", carre: 0, triangle: 0 },
+                    { label: "Le code (mais pas le permis)", carre: 0, triangle: 1 },
+                    { label: "Une voiture sans permis", carre: 0, triangle: 3 },
+                    { label: "Aucun", carre: 0, triangle: 0 }
+                ],
+                next: "q31"
+            },
+            {
+                id: "q31",
+                text: "En cours :",
+                type: "single",
+                options: [
+                    { label: "Je me tais et me morfonds dans mon ennui", carre: 0, triangle: 0 },
+                    { label: "Il peut m'arriver de converser", carre: 0, triangle: 1 },
+                    { label: "Je passe le cours à lutter contre le rire pour ne pas me faire enculer", carre: 0, triangle: 2 }
+                ],
+                next: "q33"
+            },
+            {
+                id: "q32_pieds",
+                text: "Concernant les pieds :",
+                type: "single",
+                options: [
+                    { label: "Je l'assume", action: "instant_qcq" },
+                    { label: "Je ne l'assume pas", carre: 0, triangle: 10, next: "q5" }
+                ]
+            },
+            {
+                id: "q33",
+                text: "Je joue d'un instrument :",
+                type: "single",
+                options: [
+                    { label: "Guitare", carre: 0, triangle: 0 },
+                    { label: "Piano", carre: 0, triangle: 1 },
+                    { label: "Autre", carre: 0, triangle: 2 },
+                    { label: "Aucun", carre: 1, triangle: 0 }
+                ],
+                next: "finish_trunk"
+            }
+        ];
+
+        // --- 2. BRANCHE MATRICE CARRÉE (15 QUESTIONS) ---
+        const questionsMatriceCarree = [
+            {
+                id: 1,
+                text: "Mon pote me fait un \"tu préfères\" rempli de vice :",
+                options: [
+                    { text: "Je rigole en disant qu'il est fou et ne réponds pas", type: "norm", points: 1 },
+                    { text: "J'enchaîne avec un second \"tu préfères\" qui déborde de vice", type: "sup", points: 1 },
+                    { text: "Je réfléchis et réponds 1er degré", type: "inf", points: 1 }
+                ]
+            },
+            {
+                id: 2,
+                text: "Le 17 octobre je suis allé manifester :",
+                options: [
+                    { text: "Oui", type: "sup", points: 1, nextId: 4 },
+                    { text: "Non", type: "norm", points: 0, nextId: 3 }
+                ]
+            },
+            {
+                id: 3,
+                text: "Si non, pourquoi ?",
+                options: [
+                    { text: "Je pouvais pas", type: "norm", points: 0 },
+                    { text: "Je me suis pris une racaille", type: "inf", points: 2 },
+                    { text: "Ça me concerne pas", type: "norm", points: 1 }
+                ]
+            },
+            {
+                id: 4,
+                text: "Je préfère :",
+                options: [
+                    { text: "L'analyse-synthèse", type: "sup", points: 1 },
+                    { text: "Le raisonnement par équivalence", type: "norm", points: 1 },
+                    { text: "La récurrence", type: "inf", points: 1 },
+                    { text: "Par implication", type: "norm", points: 1 },
+                    { text: "Je sais pas", type: "norm", points: 2 },
+                    { text: "Par l'absurde", type: "inf", points: 2 }
+                ]
+            },
+            {
+                id: 5,
+                text: "Je préfère :",
+                options: [
+                    { text: "Plage", type: "norm", points: 1 },
+                    { text: "Montagne", type: "sup", points: 1 },
+                    { text: "Campagne", type: "inf", points: 1 }
+                ]
+            },
+            {
+                id: 6,
+                text: "Je m'essuie le baltrou :",
+                options: [
+                    { text: "Debout", type: "inf", points: 2 },
+                    { text: "Assis", type: "norm", points: 0 },
+                    { text: "Pas", type: "inf", points: 5 },
+                    { text: "Les deux", type: "sup", points: 1 },
+                    { text: "Douche", type: "inf", points: 3 },
+                    { text: "Bidet", type: "inf", points: 4 },
+                    { text: "Avec ma main", type: "inf", points: 15 }
+                ]
+            },
+            {
+                id: 7,
+                text: "Quand on m'appelle pour un limousin :",
+                options: [
+                    { text: "Je refuse", type: "norm", points: 1 },
+                    { text: "Je suis une racli", type: "norm", points: 0 },
+                    { text: "Je fais", type: "sup", points: 1 },
+                    { text: "Je suis une racli et je fais", type: "inf", points: 6 },
+                    { text: "Je fais sans les mains", type: "inf", points: 1 },
+                    { text: "Je me retourne pour montrer mon sexe", type: "inf", points: 2 }
+                ]
+            },
+            {
+                id: 8,
+                text: "Je préfère :",
+                options: [
+                    { text: "Bière", type: "norm", points: 1 },
+                    { text: "Vin", type: "sup", points: 1 },
+                    { text: "Champagne", type: "sup", points: 2 },
+                    { text: "Vodka", type: "inf", points: 2 },
+                    { text: "Ricard ou Pastis", type: "inf", points: 2 },
+                    { text: "Gin", type: "inf", points: 1 },
+                    { text: "Rhum", type: "sup", points: 1 },
+                    { text: "Whisky", type: "norm", points: 1 },
+                    { text: "Get 27", type: "inf", points: 1 },
+                    { text: "Get 31", type: "inf", points: 2 },
+                    { text: "Punch", type: "norm", points: 1 },
+                    { text: "Jäger", type: "inf", points: 2 },
+                    { text: "Cocktail", type: "norm", points: 1 },
+                    { text: "Flash", type: "inf", points: 2 },
+                    { text: "Mocktail", type: "norm", points: 1 },
+                    { text: "Bière sans alcool", type: "norm", points: 10 },
+                    { text: "Bois pas", type: "inf", points: 1 }
+                ]
+            },
+            {
+                id: 9,
+                text: "J'utilise en majorité des feuilles :",
+                options: [
+                    { text: "grands carreaux", type: "norm", points: 1 },
+                    { text: "petits carreaux", type: "sup", points: 1 },
+                    { text: "Blanches", type: "inf", points: 1 }
+                ]
+            },
+            {
+                id: 10,
+                text: "Quand je me rase le maillot j'y vais (majoritairement) :",
+                options: [
+                    { text: "au rasoir électrique", type: "norm", points: 1 },
+                    { text: "rasoir manuel", type: "inf", points: 1 },
+                    { text: "ciseaux", type: "inf", points: 2 },
+                    { text: "opinel", type: "inf", points: 3 },
+                    { text: "cire", type: "sup", points: 2 },
+                    { text: "bandes à épiler", type: "sup", points: 1 },
+                    { text: "jamais fais", type: "inf", points: 4 }
+                ]
+            },
+            {
+                id: 11,
+                text: "Je me rase/épile les aisselles :",
+                options: [
+                    { text: "Oui", type: "sup", points: 1 },
+                    { text: "Non", type: "norm", points: 0 }
+                ]
+            },
+            {
+                id: 12,
+                text: "Ton maximum de goon en une journée :",
+                options: [
+                    { text: "0", type: "sup", points: 3 },
+                    { text: "1 à 2", type: "norm", points: 1 },
+                    { text: "3 à 5", type: "sup", points: 1 },
+                    { text: "+5", type: "inf", points: 3 }
+                ]
+            },
+            {
+                id: 13,
+                text: "Maximum de jours sans prendre de douche :",
+                options: [
+                    { text: "1 à 2", type: "norm", points: 1 },
+                    { text: "3", type: "sup", points: 1 },
+                    { text: "4 à 6", type: "inf", points: 1 },
+                    { text: "1 semaine ou plus", type: "inf", points: 2 }
+                ]
+            },
+            {
+                id: 14,
+                text: "J'ai déjà vomi :",
+                type: "multiple",
+                options: [
+                    { text: "sur moi", type: "inf", points: 0 },
+                    { text: "sur du mobilier", type: "inf", points: 1 },
+                    { text: "sur quelqu'un", type: "inf", points: 2 },
+                    { text: "pendant l'acte", type: "inf", points: 3 },
+                    { text: "aucun des trois", type: "sup", points: 1 }
+                ]
+            },
+            {
+                id: 15,
+                text: "J'ai déjà pratiqué en club :",
+                type: "multiple",
+                options: [
+                    { text: "du foot", type: "norm", points: 1 },
+                    { text: "du basket", type: "norm", points: 1 },
+                    { text: "du hand", type: "sup", points: 1 },
+                    { text: "du volley", type: "sup", points: 1 },
+                    { text: "du hockey sur gazon", type: "sup", points: 1 },
+                    { text: "du hockey sur glace", type: "inf", points: 2 },
+                    { text: "du rugby", type: "inf", points: 1 },
+                    { text: "Sport de combat", type: "inf", points: 1 },
+                    { text: "Natation / Athlétisme", type: "sup", points: 1 },
+                    { text: "Escrime", type: "inf", points: 1 },
+                    { text: "Raquette", type: "norm", points: 0 },
+                    { text: "Autre", type: "inf", points: 1 }
+                ]
+            }
+        ];
+
+        // --- 3. SOUS-TEST DIAGONALE VS ÉLÉMENTAIRE (5 QUESTIONS) ---
+        const questionsDiagonalElementaire = [
+            {
+                id: 1,
+                text: "On m'a déjà dit que j'avais trop d'ego :",
+                options: [
+                    { text: "Oui", type: "elem", points: 2 },
+                    { text: "Non", type: "diag", points: 1 }
+                ]
+            },
+            {
+                id: 2,
+                text: "Il y a une soirée BDE la veille d'un DS :",
+                options: [
+                    { text: "J'y vais dans tous les cas", type: "elem", points: 1 },
+                    { text: "J'y vais que si c'est un DS de langue", type: "neutre", points: 0 },
+                    { text: "J'y vais pas", type: "diag", points: 2 }
+                ]
+            },
+            {
+                id: 3,
+                text: "Je suis collé avec un prof intimidant, et j'ai l'impression qu'il s'est trompé dans une de ses explications :",
+                options: [
+                    { text: "Je lui dis en posant une question subtilement", type: "neutre", points: 0 },
+                    { text: "Je lui dis cash pistache qu'il s'est trompé", type: "elem", points: 2 },
+                    { text: "Je me tais et vérifie le cours après la colle", type: "diag", points: 1 },
+                    { text: "Je comprends jamais leurs explications et me content de hocher la tête pour reproduire la même erreur 3 millisecondes plus tard", type: "elem", points: 1 }
+                ]
+            },
+            {
+                id: 4,
+                text: "J'ai déjà fait un truc illégal dans ma vie :",
+                options: [
+                    { text: "Oui", type: "elem", points: 1 },
+                    { text: "Non", type: "diag", points: 2 },
+                    { text: "Je sais pas trop / pas sûr", type: "neutre", points: 0 }
+                ]
+            },
+            {
+                id: 5,
+                text: "J'ai supprimé qqun de ma vie par principe :",
+                options: [
+                    { text: "Oui", type: "elem", points: 1 },
+                    { text: "Non", type: "neutre", points: 0 }
+                ]
+            }
+        ];
+
+        // --- 4. BRANCHE MATRICE QUELCONQUE (16 QUESTIONS) ---
+        const vraieBaseQuelconque = [
+            {
+                id: "q1",
+                text: "Je préfère :",
+                type: "single",
+                options: [
+                    { label: "Grosse boîte supplément soirée commerciale", H: 2, L: 0 },
+                    { label: "Boîte techno / rave / teuf", H: 0, L: 1 },
+                    { label: "Soirée chill sur les quais", H: 1, L: 1 },
+                    { label: "Soirée chill à l'appart", H: 0, L: 1 }
+                ]
+            },
+            {
+                id: "q2",
+                text: "Je suis à la salle et je vois un mec qui fait un exercice n'importe comment :",
+                type: "single",
+                options: [
+                    { label: "J'ignore / je dis rien puisque anxiété sociale", H: 0, L: 0 },
+                    { label: "Je rigole", H: 1, L: 0 },
+                    { label: "Je snap ce geush", H: 2, L: 0 },
+                    { label: "Je vais le voir et lui explique gentiment", H: 0, L: 1 }
+                ]
+            },
+            {
+                id: "q3",
+                text: "Je suis très actif sur Insta :",
+                type: "multiple",
+                options: [
+                    { label: "Je poste fréquemment des story", H: 2, L: 0 },
+                    { label: "Je poste fréquemment des post", H: 3, L: 0 },
+                    { label: "J'accumule les post et les story à la une à travers les années", H: 1, L: 0 },
+                    { label: "Mon téléphone ne fait pas tourner Insta", H: -2, L: 0 },
+                    { label: "Pas vraiment", H: 0, L: 0 }
+                ]
+            },
+            {
+                id: "q4",
+                text: "Quand je vais en soirée, je fais :",
+                type: "multiple",
+                options: [
+                    { label: "Une petite story", H: 1, L: 0 },
+                    { label: "Un petit post", H: 2, L: 0 },
+                    { label: "Rien de spécial", H: 0, L: 0 },
+                    { label: "J'ai même pas pris de photo", H: 0, L: 1 },
+                    { label: "Je vais pas en soirée", H: -1, L: 0 }
+                ]
+            },
+            {
+                id: "q5",
+                text: "Une granny oscillante traverse la route :",
+                type: "single",
+                options: [
+                    { label: "Je fais rien car anxiété sociale", H: 0, L: 0 },
+                    { label: "Je fais rien car blc de cette tchoin", H: 1, L: 0 },
+                    { label: "Je l'aide", H: 0, L: 1 }
+                ]
+            },
+            {
+                id: "q6",
+                text: "J'ai très envie de caguer (faire caca) à la BU :",
+                type: "single",
+                options: [
+                    { label: "C'est que les hallouf qui font caca à la BU", H: 2, L: 0 },
+                    { label: "J'ai peur de choper une hépatite si j'y vais", H: 1, L: 0 },
+                    { label: "Flemme / j'aime pas chioter autre part que chez moi", H: 0, L: 0 },
+                    { label: "J'y vais", H: -1, L: 0 }
+                ]
+            },
+            {
+                id: "q7",
+                text: "Mon pote a fait un pet foireux (slip souillé) :",
+                type: "single",
+                options: [
+                    { label: "Je me marre puis le couvre", H: 0, L: 2 },
+                    { label: "Je le couvre", H: 0, L: 1 },
+                    { label: "Je me marre puis je le laisse dans sa merde (littéralement)", H: 1, L: 0 },
+                    { label: "Je snap ce golem", H: 2, L: 0 },
+                    { label: "La PT entiere le saura le lendemain", H: 0, L: 0, forceColonne: true }
+                ]
+            },
+            {
+                id: "q8",
+                text: "Je pète en cours ; le prof accuse mon pote :",
+                type: "single",
+                options: [
+                    { label: "Je me dénonce", H: 0, L: 1 },
+                    { label: "Je garde le silence", H: 0, L: 0 }
+                ]
+            },
+            {
+                id: "q9",
+                text: "Mon pote me taxe régulièrement des feuilles. Il est 8h. J'en ai 3. Il m'en demande une :",
+                type: "single",
+                options: [
+                    { label: "Je donne (en l'insultant (ou pas))", H: 0, L: 1 },
+                    { label: "Je donne rien à ce sarce", H: 0, L: 0 },
+                    { label: "Je lui donne une demi-feuille simple, ce charclo mérite pas plus", H: 1, L: 0 }
+                ]
+            },
+            {
+                id: "q10",
+                text: "Je suis ce taxeur de feuilles :",
+                type: "single",
+                options: [
+                    { label: "Oui", H: 0, L: -1 },
+                    { label: "Non", H: 0, L: 0 }
+                ]
+            },
+            {
+                id: "q11",
+                text: "J'ai déjà lu un livre de philosophie par intérêt personnel (hors obligations ou conseils scolaires) :",
+                type: "single",
+                options: [
+                    { label: "Oui", H: 0, L: 1 },
+                    { label: "Non", H: 0, L: 0 }
+                ]
+            },
+            {
+                id: "q12",
+                text: "J'ai déjà été suffisamment impacté (bouleversé) par une œuvre musicale / picturale / cinématographique pour qu'elle affecte ma perception sur plusieurs aspects de la vie / mes valeurs :",
+                type: "single",
+                options: [
+                    { label: "Oui", H: 0, L: 2 },
+                    { label: "Non", H: 0, L: 0 }
+                ]
+            },
+            {
+                id: "q13",
+                text: "Ça s'embrouille sur le groupe classe sur le design du pull :",
+                type: "single",
+                options: [
+                    { label: "J'apaise les tensions et apporte des solutions", H: -1, L: 0 },
+                    { label: "Je jette de l'huile sur le feu", H: 0, L: 0 },
+                    { label: "Je tente de créer une guerre civile intra-PT", H: 2, L: 0 },
+                    { label: "J'envoie une vidéo de biche", H: 1, L: 0 }
+                ]
+            },
+            {
+                id: "q14",
+                text: "Je pose une question au prof en cours avant de me faire absolument crucifier :",
+                type: "single",
+                options: [
+                    { label: "Je ferme ma grande bouche pour toujours", H: 0, L: 0 },
+                    { label: "Blc je pose une question si je veux", H: 1, L: 0 }
+                ]
+            },
+            {
+                id: "q15",
+                text: "Je me fais massacrer en colle supplément « vous êtes vraiment en star vous ?» :",
+                type: "single",
+                options: [
+                    { label: "Je pleure", H: 0, L: -1 },
+                    { label: "Maxi gênant, je déguste mon seum jusqu'au prochain fist (5h plus tard)", H: 0, L: 1 },
+                    { label: "À force j'ai l'habitude", H: 0, L: -1 },
+                    { label: "Blc mentalité prépa", H: 0, L: 0 }
+                ]
+            },
+            {
+                id: "q16",
+                text: "Le premier reel du nouveau compte PTSI meme (abonnés pp Israël) :",
+                type: "single",
+                options: [
+                    { label: "Est méga problématique", H: 0, L: 1 },
+                    { label: "Je capte qu'on trouve ça chaud mais je reste neutre", H: 0, L: 0 },
+                    { label: "On peut rire non ?", H: 0, L: -2 }
+                ]
+            }
+        ];
+
+        // --- 5. QUESTIONNAIRE DE DIMENSION X (10 QUESTIONS) ---
+        const questionsDimension = [
+            {
+                id: "dim_q1",
+                text: "J'ai des grosses fesses :",
+                type: "single",
+                options: [
+                    { label: "Oui", T: 1, U: 0 },
+                    { label: "Non", T: 0, U: 0 },
+                    { label: "Je suis le boule d'or", T: 2, U: 0 },
+                    { label: "Jveux pas répondre", T: 0, U: 0 }
+                ]
+            },
+            {
+                id: "dim_q2",
+                text: "Je suis chauve :",
+                type: "single",
+                options: [
+                    { label: "Oui", T: 2, U: 0 },
+                    { label: "Non", T: 0, U: 0 },
+                    { label: "Clavitie seulement", T: 0, U: 1 }
+                ]
+            },
+            {
+                id: "dim_q3",
+                text: "J'ai les cheveux teints :",
+                type: "single",
+                options: [
+                    { label: "Oui", T: 1, U: 0 },
+                    { label: "Non", T: 0, U: 0 },
+                ]
+            },
+            {
+                id: "dim_q4",
+                text: "Ma taille de capotes:",
+                type: "single",
+                options: [
+                    { label: "Moi femme", T: 0, U: 0 },
+                    { label: "Standard (pas de taille)", T: 0, U: 0 },
+                    { label: "S", T: 0, U: 2 },
+                    { label: "L", T: 1, U: 0 },
+                    { label: "XL ou XXL", T: 2, U: 0 },
+                    { label: "jsp", T: 0, U: 0 },
+                    { label: "Jveux pas répondre", T: 0, U: 0 }
+                ]
+            },
+            {
+                id: "dim_q5",
+                text: "Ma taille de bonnet :",
+                type: "single",
+                options: [
+                    { label: "Moi homme", T: 0, U: 0 },
+                    { label: "A à C", T: 0, U: 0 },
+                    { label: "C à E", T: 1, U: 0 },
+                    { label: "+ E", T: 2, U: 0 },
+                    { label: "Jveux pas répondre", T: 0, U: 0 }
+                ]
+            },
+            {
+                id: "dim_q6",
+                text: "Je pèse :",
+                type: "single",
+                options: [
+                    { label: "-50 kg", T: 0, U: 2 },
+                    { label: "50 - 60kg", T: 0, U: 1 },
+                    { label: "60 - 70kg", T: 1, U: 0 },
+                    { label: "70 - 80kg", T: 2, U: 0 },
+                    { label: "+ 80kg", T: 3, U: 0 },
+                    { label: "Jveux pas répondre", T: 0, U: 0 }
+                ]
+            },
+            {
+                id: "dim_q7",
+                text: "Je mesure :",
+                type: "single",
+                options: [
+                    { label: "- 150cm", T: 0, U: 3 },
+                    { label: "150 - 160cm", T: 0, U: 2 },
+                    { label: "160 - 170cm", T: 0, U: 0 },
+                    { label: "170 - 180cm", T: 1, U: 0 },
+                    { label: "180 - 190cm", T: 2, U: 0 },
+                    { label: "+ 190cm", T: 3, U: 0 }
+                ]
+            },
+            {
+                id: "dim_q8",
+                text: "Ma pointure de chaussures :",
+                type: "single",
+                options: [
+                    { label: "- 35", T: 0, U: 3 },
+                    { label: "35 - 37", T: 0, U: 1 },
+                    { label: "38 - 40", T: 0, U: 0 },
+                    { label: "41 - 44", T: 1, U: 0 },
+                    { label: "45 - 48", T: 2, U: 0 },
+                    { label: "+ 48", T: 3, U: 0 }
+                ]
+            },
+            {
+                id: "dim_q9",
+                text: "J'ai les chicots qui chicotent (les appareils dentaires ont peur de moi) :",
+                type: "single",
+                options: [
+                    { label: "Oui", T: 1, U: 0 },
+                    { label: "Non", T: 0, U: 0 },
+                ]
+            },
+            {
+                id: "dim_q10",
+                text: "Je pète/rote :",
+                type: "single",
+                options: [
+                    { label: "Très souvent", T: 2, U: 0 },
+                    { label: "Souvent", T: 1, U: 0 },
+                    { label: "Ça m'arrive", T: 0, U: 0 },
+                    { label: "Jamais", T: 0, U: 1 }
+                ]
+            }
+        ];
+
+        // --- 6. TEST COEFFICIENTS FIXES VS VARIABLES (QUANTIFICATEUR V — 12 QUESTIONS) ---
+        const SEUILS_QUANTIFICATEUR_V = {
+            seuil0VarMax: 5,     // Si V <= seuil0VarMax : 0 coefficient variable par zone (coefficients fixes)
+            seuil1VarMax: 10,     // Si V est entre (seuil0VarMax + 1) et seuil1VarMax : max 1 coeff variable par zone
+            seuil2VarMax: 16     // Si V est entre (seuil1VarMax + 1) et seuil2VarMax : max 2 coeffs variables par zone
+                                 // Au-delà (> seuil2VarMax) : max 3 coeffs variables par zone
+        };
+
+        const questionsCoeffV = [
+            {
+                id: "coeffV_q1",
+                text: "Quand je me recalle les yeuks (testicules) dans le slibard (ou tout autre apapreil génital #inclusivité #yenaurapourtoutlemonde):",
+                type: "single",
+                options: [
+                    { label: "J'y vais à la mano direct dans le falzar", V: 2 },
+                    { label: "Technique de la poche", V: 0 },
+                    { label: "Je tanke", V: -1 },
+                    { label: "J'envoie des mouvements de jambe à la Mickael Jackson", V: 1 }
+                ]
+            },
+            {
+                id: "coeffV_q2",
+                text: "Je dors:",
+                type: "single",
+                options: [
+                    { label: "nu comme un ver", V: 1 },
+                    { label: "En sous-vêtements", V: 0 },
+                    { label: "nu comme un ver mais avec des chaussettes (???)", V: 2 },
+                    { label: "Juste bas de pyjama", V: 0 },
+                    { label: "Haut de pyjama + sous-vêtements", V: -1 },
+                    { label: "Haut de pyjama seul, sans sous-vêtements", V: 2 },
+                    { label: "Full pyjama", V: -1 }
+                ]
+            },
+            {
+                id: "coeffV_q3",
+                text: "Mon humour se construit sur la gêne qu'il crée :",
+                type: "single",
+                options: [
+                    { label: "Non", V: -1 },
+                    { label: "Un peu", V: 0 },
+                    { label: "En partie", V: 1 },
+                    { label: "Exclusivement", V: 2 }
+                ]
+            },
+            {
+                id: "coeffV_q4",
+                text: "Ma meuf/Mon mec me met inopinément un doigt dans l'cul pendant l'acte:",
+                type: "single",
+                options: [
+                    { label: "Je stoppe tout", V: -1 },
+                    { label: "Je fais belek il s'est rien passé (quitte à le mentionner plus tard)", V: 0 },
+                    { label: "Je l'invite à réitérer pour être sûr", V: 1 },
+                    { label: "Je sais pas (Pour tous les non baiseurs imaginez au moins plutôt que de sauter sur cette réponse)", V: -3 }
+                ]
+            },
+            {
+                id: "coeffV_q5",
+                text: "J'ai déjà fait l'accent d'une minorité devant la minoritée concernée :",
+                type: "single",
+                options: [
+                    { label: "Oui", V: 1 },
+                    { label: "Non", V: 0 }
+                ]
+            },
+            {
+                id: "coeffV_q6",
+                text: "Un SDF me parle dans la rue :",
+                type: "single",
+                options: [
+                    { label: "Je baisse les yeux et enfonce mes écouteurs dans mes oreilles", V: 0 },
+                    { label: "Je lui répond", V: 1 },
+                    { label: "Je lui vole sa thune", V: 2 }
+                ]
+            },
+            {
+                id: "coeffV_q7",
+                text: "J'ai la chiasse (ou un vague présage...) avant un DS :",
+                type: "single",
+                options: [
+                    { label: "J'y vais pas et je trouve une excuse bidon", V: 0 },
+                    { label: "J'y vais", V: 1 },
+                    { label: "J'y vais pas et je dis cash pistache au prof que j'avais le baltrou en feu", V: 2 }
+                ]
+            },
+            {
+                id: "coeffV_q8",
+                text: "Je suis en train de me br et je commence à soupçonner que Maria à 5km de chez moi a piraté mon bigo :",
+                type: "single",
+                options: [
+                    { label: "Jsp je ne me br pas (oui oui bien sûr...)", V: 0 },
+                    { label: "J'ignore et persévère mon ouvrage", V: 1 },
+                    { label: "Je prends la vago et vais la voir en face à face pour mettre les choses au clair", V: 3 }
+                ]
+            },
+            {
+                id: "coeffV_q9",
+                text: "Au week end d'inté je me suis fait :",
+                type: "single",
+                options: [
+                    { label: "Rien", V: 0 },
+                    { label: "Je suis pas venu", V: -1 },
+                    { label: "Buzz cut", V: 1 },
+                    { label: "PT dans le crâne", V: 2 }
+                ]
+            },
+            {
+                id: "coeffV_q10",
+                text: "J'ai déjà joué à des jeux d'argent :",
+                type: "single",
+                options: [
+                    { label: "Non", V: 0 },
+                    { label: "Oui", V: 1 },
+                    { label: "Oui supplément mes pertes globales s'élèvent à plus de 100 euros", V: 2 },
+                    { label: "Oui supplément strip poker", V: 2 }
+                ]
+            },
+            {
+                id: "coeffV_q11",
+                text: "On me propose une proba de fou furieux (un truc que j'aimerais pas faire) :",
+                type: "single",
+                options: [
+                    { label: "Je refuse", V: -1 },
+                    { label: "Je prends le risque par appât de la reverse mais si je perds je ferais pas", V: -3 },
+                    { label: "Je prends le risque par appât de la reverse et si je perds je ferais", V: 2 },
+                ]
+            },
+            {
+                id: "coeffV_q12",
+                text: "Mon groupe de potes me propose d'aller en vacances mais ça pue le bourbier et la garde à vue à 4 :",
+                type: "single",
+                options: [
+                    { label: "J'ai déjà fait ma valise", V: 1 },
+                    { label: "Jdis non", V: 0 }
+                ]
+            }
+        ];
+
+        // --- 7. TEST COMMUN DES ZONES A, B, C (13 QUESTIONS VALIDÉES) ---
+        const questionsZonesABC = [
+            {
+                id: "zone_q1",
+                text: "J'ai déjà été à l'origine...",
+                type: "single",
+                options: [
+                    { label: "d'une fausse couche", zone: "A", points: 4 },
+                    { label: "d'un avortement", zone: "A", points: 6 },
+                    { label: "de rien", zone: "B", points: 1 }
+                ]
+            },
+            {
+                id: "zone_q2",
+                text: "J'ai déjà payé une bouffe à 1 SDF :",
+                type: "single",
+                options: [
+                    { label: "Oui", zone: "C", points: 3 },
+                    { label: "Non", zone: null, points: 0 }
+                ]
+            },
+            {
+                id: "zone_q3",
+                text: "J'ai déjà fait un black-out à cause d'un psychotrope :",
+                type: "single",
+                options: [
+                    { label: "Oui", zone: "A", points: 4 },
+                    { label: "Non", zone: null, points: 0 }
+                ]
+            },
+            {
+                id: "zone_q4",
+                text: "J'ai déjà fait un coma éthylique à cause d'un psychotrope :",
+                type: "single",
+                options: [
+                    { label: "Oui", zone: "A", points: 6 },
+                    { label: "Non", zone: null, points: 0 }
+                ]
+            },
+            {
+                id: "zone_q5",
+                text: "Le truc le plus harr que j'ai déjà pris :",
+                type: "single",
+                options: [
+                    { label: "Rien", zone: "C", points: 3 },
+                    { label: "Alcool", zone: "B", points: 3 },
+                    { label: "Joint", zone: "B", points: 2 },
+                    { label: "Space cake", zone: "A", points: 4 },
+                    { label: "Ecstasy", zone: "A", points: 5 },
+                    { label: "Shroom", zone: "A", points: 5 },
+                    { label: "Cocaïne", zone: "A", points: 10 },
+                    { label: "Opioïdes", zone: "A", points: 15 }
+                ]
+            },
+            {
+                id: "zone_q6",
+                text: "J'ai déjà pris un animal à la SPA :",
+                type: "single",
+                options: [
+                    { label: "Non", zone: "B", points: 4 },
+                    { label: "Oui", zone: "C", points: 8 },
+                    { label: "Il y était de retour 2 mois plus tard", zone: "A", points: 5 }
+                ]
+            },
+            {
+                id: "zone_q7",
+                text: "J'ai déjà été :",
+                type: "single",
+                options: [
+                    { label: "délégué / vice-délégué", zone: "C", points: 4 },
+                    { label: "éco-délégué", zone: "A", points: 4 },
+                    { label: "Aucun", zone: "B", points: 3 }
+                ]
+            },
+            {
+                id: "zone_q8",
+                text: "Je me suis déjà investi dans une association en tout genre (amnesty international, club de foot, DZ mafia, ...) :",
+                type: "single",
+                options: [
+                    { label: "Oui", zone: "C", points: 5 },
+                    { label: "Non", zone: "B", points: 2 }
+                ]
+            },
+            {
+                id: "zone_q9",
+                text: "Je préfère :",
+                type: "single",
+                options: [
+                    { label: "Maths", zone: "C", points: 3 },
+                    { label: "Physique", zone: "B", points: 2 },
+                    { label: "Info", zone: "A", points: 6 },
+                    { label: "SI", zone: "A", points: 3 },
+                    { label: "Anglais", zone: "C", points: 4 },
+                    { label: "Français", zone: "C", points: 5 }
+                ]
+            },
+            {
+                id: "zone_q10",
+                text: "J'ai l'habitude :",
+                type: "multiple",
+                options: [
+                    { label: "De mettre des mains aux fesses aux collègues de même sexe", zone: "C", points: 4 },
+                    { label: "De mettre des chabites aux collègues du même sexe", zone: "A", points: 5 },
+                    { label: "De mettre des olives aux collègues du même sexe", zone: "A", points: 3 },
+                    { label: "Rien de tout ça", zone: "B", points: 7 }
+                ]
+            },
+            {
+                id: "zone_q11",
+                text: "Pendant l'orgasme :",
+                type: "single",
+                options: [
+                    { label: "je hurle", zone: "A", points: 8 },
+                    { label: "je crie", zone: "C", points: 5 },
+                    { label: "je gémis", zone: "B", points: 3 },
+                    { label: "poker face", zone: "A", points: 5 }
+                ]
+            },
+            {
+                id: "zone_q12",
+                text: "Le maximum de jours où j'ai mis un t-shirt sans le laver d'affilée :",
+                type: "single",
+                options: [
+                    { label: "1", zone: "C", points: 2 },
+                    { label: "2", zone: "B", points: 2 },
+                    { label: "3", zone: "A", points: 2 },
+                    { label: "4", zone: "A", points: 3 },
+                    { label: "+4", zone: "A", points: 5 }
+                ]
+            },
+            {
+                id: "zone_q13",
+                text: "Mon shampoing est un 3 en 1 :",
+                type: "single",
+                options: [
+                    { label: "Oui", zone: "A", points: 3 },
+                    { label: "Non", zone: null, points: 0 }
+                ]
+            }
+        ];
+
+        // --- 8. GÉNÉRATEUR DES PROFILS FINAUX ---
+        const baseMatrixProfiles = [
+            {
+                key: "diagonale",
+                name: "Matrice Diagonale",
+                icon: "⚡",
+                calcDims: (X) => ({ rows: X, cols: X }),
+                traits: "T'es carrément droit dans tes bottes, on pourrait te qualifier de normal, et c'est très bien comme ça. Si le monde avait plus de gens comme toi, tout irait pour le mieux. On raconte même que pas une matrice diagonale ne s'est déjà embrouillé avec quelqu'un. \nSont des matrices diagonales : Le pain, Pierre Niney."
+            },
+            {
+                key: "elementaire",
+                name: "Matrice Carrée Élémentaire",
+                icon: "🔥",
+                calcDims: (X) => ({ rows: X, cols: X }),
+                traits: "Toi t'es un sacré spécimen, t'as pas de ligne directrice t'as un point directeur. Solide sur ton appui (peut être même un peu trop), la légende raconte même que si on rassemble toutes les matrices élémentaires du monde, on pourrait créer n'importe quel individu... \nEst une matrice élémentaire : Le sel."
+            },
+            {
+                key: "triangulaire_sup",
+                name: "Matrice Triangulaire Supérieure",
+                icon: "📐",
+                calcDims: (X) => ({ rows: X, cols: X }),
+                traits: "T'es un(e) gars/meuf chill, sympatoche, bref tel le morceau de chocolat au bout des cornets de glace tu nous suprends pas mais ça fait toujours plaisir de te voir. \nPrends garde à ta homonyme maléfique la matrice triangulaire inférieure. \nEst une matrice triangulaire sup : l'emoji 👌"
+            },
+            {
+                key: "triangulaire_inf",
+                name: "Matrice Triangulaire Inférieure",
+                icon: "🔻",
+                calcDims: (X) => ({ rows: X, cols: X }),
+                traits: "Tel le loup déguisé en mouton, t'as peut être l'air normal, mais au fond t'es un gros secoué du bocal. \nATTENTION LE LOUP EST RENTRÉ DANS LA BERGERIE AOUUU 🐺🐺. \nSont des matrices triangulaires inf : P-Diddy ; Epstein ; Stephen Hawking."
+            },
+            {
+                key: "carree_quelconque",
+                name: "Matrice Carrée Quelconque",
+                icon: "🌀",
+                calcDims: (X) => ({ rows: X, cols: X }),
+                traits: "Difficile de te mettre dans une case, donc t'en as pas. Tu crées ta propre case yeeha 🤙. \nAttention, tout peut encore basculer, la matrice nulle te regarde avec un œil malicieux..."
+            },
+            {
+                key: "colonne",
+                name: "Matrice Colonne",
+                icon: "🏛️",
+                calcDims: (X) => ({ rows: X, cols: 1 }),
+                traits: "On peut dire que t'es un/une sacré(e) aura farmer toi. Tout le monde te respect ... attends .. en fait nan tout le monde a peur de toi :/ \nInvestis sur le capital émotionnel mon ami, trop de prestance tue la prestance. \nSont aussi des matrices colonnes : Hitler, le piment."
+            },
+            {
+                key: "ligne",
+                name: "Matrice Ligne",
+                icon: "➖",
+                calcDims: (X) => ({ rows: 1, cols: X }),
+                traits: "Trop mignon une matrice ligne ! T'es complètement invisible aux yeux des autres mais dès qu'on apprend à te connaître, tu t'avère être super deep comme personne. Essaye de parler un peu plus quand même chef.\nAussi les matrices colonnes te terrifient et jte comprends. \nSont aussi des matrices lignes : Robin Williams, pas d'autre idées là c'est trop niche pour mes compétences"
+            },
+            {
+                key: "qcq_4x_x",
+                name: "Matrice Quelconque en 4X par X",
+                icon: "📊",
+                calcDims: (X) => ({ rows: 4 * X, cols: X }),
+                traits: "La prestance ça te connaît, t'es pas n'importe qui mon gars. Mais malgrès tout, t'es pas aussi benêt qu'on pourrait penser, y'a bien un petit (oui petit n'abusons pas) coeur derrière toute cette aura. \nAussi les matrices colonnes te terrifient mais tu fais belek pour ta survie. \nSont aussi des matrices 4X par X : le jus de fruit, Han Solo (oe jsp pas d'idées sur celui-là)."
+            },
+            {
+                key: "qcq_x_4x",
+                name: "Matrice Quelconque en X par 4X",
+                icon: "🔭",
+                calcDims: (X) => ({ rows: X, cols: 4 * X }),
+                traits: "Dès que tu sors de ton groupe de pote, c'est la jungle, c'est une terre inconnue pour toi. Si seulement les gens savaient à quel point tu peux être intéressant, quel potentiel gâché... \nSont aussi des matrices X par 4X : eh jsp frr."
+            },
+            {
+                key: "qcq_3x_x",
+                name: "Matrice Quelconque en 3X par X",
+                icon: "🎉",
+                calcDims: (X) => ({ rows: 3 * X, cols: X }),
+                traits: "T'es là aux before, aux soirées, aux after, aux after des after bref t'es présent, t'es un peu pote avec tout le monde. Mais au delà des cubis de rosé descendus, t'es quand même quelqu'un d'intéressant quand on apprend à te connaître. \nT'évite quand même les matrices colonnes, t'as pas envie d'être connu au point de pactiser. \nEst aussi une matrice 3X par X : Le cabillaud."
+            },
+            {
+                key: "qcq_x_3x",
+                name: "Matrice Quelconque en X par 3X",
+                icon: "🧭",
+                calcDims: (X) => ({ rows: X, cols: 3 * X }),
+                traits: "T'es ce mec un peu marrant, sympatoche, viteuf sociable. Mais dès que ya un pépin pour un de tes gars, c'est toi qu'on vient voir pour en parler. \nEst aussi une matrice X par 3X : le cannabis."
+            },
+            {
+                key: "qcq_2x_x",
+                name: "Matrice Quelconque en 2X par X",
+                icon: "⚖️",
+                calcDims: (X) => ({ rows: 2 * X, cols: X }),
+                traits: "Tel le fromage blanc, parfait compromis entre le yaourt et le fromage, tu es le parfait compromis entre les spotlight et la sagesse. \nHeureusement que ton fromage blanc est saupoudré d'aisance sociale, autrement t'aurais finis dans les tréfonds des matrices carrées. \nSont aussi des matrices 2X par X : le compté, Khalamite."
+            },
+            {
+                key: "qcq_x_2x",
+                name: "Matrice Quelconque en X par 2X",
+                icon: "🤝",
+                calcDims: (X) => ({ rows: X, cols: 2 * X }),
+                traits: "Tel le fromage blanc, parfait compromis entre le yaourt et le fromage, tu es le parfait compromis entre les spotlight et la sagesse. \nHeureusement que ton fromage blanc est saupoudré de gentillesse, autrement t'aurais finis dans les tréfonds des matrices carrées. \nSont aussi des matrices X par 2X : les gervita, Zidane."
+            },
+            {
+                key: "qcq_xp1_x",
+                name: "Matrice Quelconque en (X + 1) par X",
+                icon: "📐",
+                calcDims: (X) => ({ rows: X + 1, cols: X }),
+                traits: "On pourrait argumenter que t'es une matrice carrée, mais ta capacité à être socialement un peu présent t'as fait passer de justesse chez les matrices quelconques. T'es un peu aux autres matrices quelconques ce que le l'emmental rappé est au fromage. Finalement t'es sûrement quelqu'un de très chill, et on t'en demande pas plus. \nSont aussi des matrices (X + 1) par X : eh jsp frr"
+            },
+            {
+                key: "qcq_x_xp1",
+                name: "Matrice Quelconque en X par (X + 1)",
+                icon: "🧩",
+                calcDims: (X) => ({ rows: X, cols: X + 1 }),
+                traits: "On pourrait argumenter que t'es une matrice carrée, mais ta capacité à être de plutôt bon conseils t'as fait passer de justesse chez les matrices quelconques. T'es un peu aux autres matrices quelconques ce que le l'emmental rappé est au fromage. Finalement t'es sûrement quelqu'un de très chill, et on t'en demande pas plus. \nSont aussi des matrices X par (X + 1) : eh jsp frr"
+            }
+        ];
+
+        // Construction des écrans finaux (indexés par `${key}_X${X}`)
+        const catalogue75Resultats = {};
+        baseMatrixProfiles.forEach(profile => {
+            [1, 2, 3, 4, 5].forEach(X => {
+                const { rows, cols } = profile.calcDims(X);
+                const resultId = `${profile.key}_X${X}`;
+
+                catalogue75Resultats[resultId] = {
+                    id: resultId,
+                    matrixKey: profile.key,
+                    matrixName: profile.name,
+                    dimensionX: X,
+                    rows: rows,
+                    cols: cols,
+                    icon: profile.icon,
+                    title: `${profile.name} en ${rows} × ${cols}`,
+                    description: `\nTu es une ${profile.name} donc de dimension ${rows} par ${cols}.\n\nCaractéristiques conservées :\n${profile.traits}`
+                };
+            });
+        });
+
+        // --- VARIABLES D'ÉTAT GLOBALES ---
+        const questionById = {};
+        questions.forEach(q => { questionById[q.id] = q; });
+
+        let historyStack = [];
+        let currentQuestionId = "q1";
+        let currentState = { carre: 0, triangle: 0, selectedArts: [], gamingAnyPositive: false };
+
+        let currentPhase = "trunk"; // "trunk" | "carree" | "diagElem" | "quelconque" | "dimension" | "coeffV" | "zonesABC"
+        let indexCarree = 0;
+        let scoresCarree = { norm: 0, sup: 0, inf: 0 };
+        let indexDiagElem = 0;
+        let scoresDiagElem = { diag: 0, elem: 0 };
+
+        let vrqIndex = 0;
+        let vrqScoreH = 0;
+        let vrqScoreL = 0;
+        let vrqForceCol = false;
+
+        let acquiredMatrix = {
+            key: "carree_quelconque",
+            category: "",
+            typeName: "",
+            formatCode: ""
+        };
+
+        let dimIndex = 0;
+        let dimScoreT = 0;
+        let dimScoreU = 0;
+        let finalDimensionProfile = null;
+
+        let coeffVIndex = 0;
+        let coeffVScore = 0;
+
+        let zonesIndex = 0;
+        let scoresZones = { A: 0, B: 0, C: 0 };
+
+        // --- NAVIGATION TRONC COMMUN ---
+
+
+        function startQuiz() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('matrix-visual-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('progress-indicator').classList.remove('hidden');
+
+            currentState = { carre: 0, triangle: 0, selectedArts: [], gamingAnyPositive: false };
+            acquiredMatrix = { key: "carree_quelconque", category: "", typeName: "", formatCode: "" };
+            historyStack = [];
+            currentQuestionId = "q1";
+            currentPhase = "trunk";
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            if (currentPhase === "carree") {
+                renderQuestionCarree();
+                return;
+            }
+            if (currentPhase === "diagElem") {
+                renderQuestionDiagElem();
+                return;
+            }
+            if (currentPhase === "quelconque") {
+                renderVrqQuestion();
+                return;
+            }
+            if (currentPhase === "dimension") {
+                renderDimensionQuestion();
+                return;
+            }
+            if (currentPhase === "coeffV") {
+                renderCoeffVQuestion();
+                return;
+            }
+            if (currentPhase === "zonesABC") {
+                renderZonesABCQuestion();
+                return;
+            }
+
+            const q = questionById[currentQuestionId];
+            if (!q) {
+                evaluateTrunkOutcome();
+                return;
+            }
+
+            const stepCount = historyStack.length + 1;
+            document.getElementById('current-step-num').textContent = stepCount;
+            document.getElementById('progress-bar').style.width = Math.min(96, Math.round((stepCount / 33) * 100)) + '%';
+
+            document.getElementById('question-text').textContent = q.text;
+            const hintEl = document.getElementById('question-hint');
+            if (q.type === "multiple") hintEl.classList.remove('hidden');
+            else hintEl.classList.add('hidden');
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 cursor-pointer transition-all duration-150 group select-none";
+                const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
+                label.innerHTML = `
+                    <input type="${inputType}" name="input_${q.id}" value="${idx}" class="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700 focus:ring-indigo-500">
+                    <span class="ml-3.5 text-sm sm:text-base text-slate-200 group-hover:text-white font-medium">${opt.label}</span>
+                `;
+                container.appendChild(label);
+            });
+
+            document.getElementById('prev-btn').disabled = (historyStack.length === 0);
+        }
+
+        function handleNext() {
+            if (currentPhase === "carree") {
+                handleNextCarree();
+                return;
+            }
+            if (currentPhase === "diagElem") {
+                handleNextDiagElem();
+                return;
+            }
+            if (currentPhase === "quelconque") {
+                handleNextQuelconque();
+                return;
+            }
+            if (currentPhase === "dimension") {
+                handleNextDimension();
+                return;
+            }
+            if (currentPhase === "coeffV") {
+                handleNextCoeffV();
+                return;
+            }
+            if (currentPhase === "zonesABC") {
+                handleNextZonesABC();
+                return;
+            }
+
+            const q = questionById[currentQuestionId];
+            if (!q) return;
+
+            const previousSnapshot = {
+                questionId: currentQuestionId,
+                state: JSON.parse(JSON.stringify(currentState))
+            };
+
+            if (q.type === 'single') {
+                const selectedRadio = document.querySelector(`input[name="input_${q.id}"]:checked`);
+                if (!selectedRadio) {
+                    showNotification("Sélectionne une réponse pour continuer.");
+                    return;
+                }
+
+                const optIndex = parseInt(selectedRadio.value, 10);
+                const chosenOption = q.options[optIndex];
+
+                if (chosenOption.carre) currentState.carre += chosenOption.carre;
+                if (chosenOption.triangle) currentState.triangle += chosenOption.triangle;
+
+                if (q.id.startsWith("q14_") && chosenOption.gamingPositive) {
+                    currentState.gamingAnyPositive = true;
+                }
+
+                if (chosenOption.action === "instant_qcq") {
+                    historyStack.push(previousSnapshot);
+                    renderFinalScreen("qcq_pieds");
+                    return;
+                }
+
+                let nextId = chosenOption.next || q.next;
+                nextId = resolveTransition(nextId);
+
+                historyStack.push(previousSnapshot);
+                if (nextId === "finish_trunk") {
+                    evaluateTrunkOutcome();
+                } else {
+                    currentQuestionId = nextId;
+                    renderQuestion();
+                }
+            } else if (q.type === 'multiple') {
+                const checkedBoxes = document.querySelectorAll(`input[name="input_${q.id}"]:checked`);
+                if (checkedBoxes.length === 0) {
+                    showNotification("Sélectionne au moins une réponse.");
+                    return;
+                }
+
+                let selectedKeys = [];
+                checkedBoxes.forEach(cb => {
+                    const optIndex = parseInt(cb.value, 10);
+                    const chosenOption = q.options[optIndex];
+                    if (chosenOption.carre) currentState.carre += chosenOption.carre;
+                    if (chosenOption.triangle) currentState.triangle += chosenOption.triangle;
+                    if (chosenOption.key) selectedKeys.push(chosenOption.key);
+                });
+
+                if (q.id === "q12") currentState.selectedArts = selectedKeys;
+
+                let nextId = resolveTransition(q.next);
+                historyStack.push(previousSnapshot);
+                currentQuestionId = nextId;
+                renderQuestion();
+            }
+        }
+
+        function resolveTransition(target) {
+            if (target === "dynamic_art") {
+                if (currentState.selectedArts.includes("musique")) return "q13_1";
+                if (currentState.selectedArts.includes("jeuxvideo")) {
+                    currentState.gamingAnyPositive = false;
+                    return "q14_1";
+                }
+                if (currentState.selectedArts.includes("cinema")) return "q15_1";
+                return "q16";
+            }
+            if (target === "after_music") {
+                if (currentState.selectedArts.includes("jeuxvideo")) {
+                    currentState.gamingAnyPositive = false;
+                    return "q14_1";
+                }
+                if (currentState.selectedArts.includes("cinema")) return "q15_1";
+                return "q16";
+            }
+            if (target === "after_gaming") {
+                if (!currentState.gamingAnyPositive) currentState.triangle += 1;
+                if (currentState.selectedArts.includes("cinema")) return "q15_1";
+                return "q16";
+            }
+            return target;
+        }
+
+        function evaluateTrunkOutcome() {
+            if (currentState.carre >= currentState.triangle) {
+                renderFinalScreen("carree_intermediaire");
+            } else {
+                renderFinalScreen("qcq_standard");
+            }
+        }
+
+        // --- BRANCHE MATRICE CARRÉE ---
+        function startCarreeBranch() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('matrix-visual-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('progress-indicator').classList.remove('hidden');
+
+            currentPhase = "carree";
+            indexCarree = 0;
+            scoresCarree = { norm: 0, sup: 0, inf: 0 };
+            renderQuestionCarree();
+        }
+
+        function renderQuestionCarree() {
+            if (indexCarree >= questionsMatriceCarree.length) {
+                evaluateCarreeOutcome();
+                return;
+            }
+
+            const q = questionsMatriceCarree[indexCarree];
+            document.getElementById('current-step-num').textContent = "Carrée " + q.id + "/15";
+            document.getElementById('progress-bar').style.width = Math.round((q.id / 15) * 100) + '%';
+            document.getElementById('question-text').textContent = q.text;
+            
+            const hintEl = document.getElementById('question-hint');
+            if (q.type === "multiple") hintEl.classList.remove('hidden');
+            else hintEl.classList.add('hidden');
+            
+            document.getElementById('prev-btn').disabled = true;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
+
+            q.options.forEach((opt, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 cursor-pointer transition-all duration-150 group select-none";
+                label.innerHTML = `
+                    <input type="${inputType}" name="input_carree" value="${idx}" class="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700">
+                    <span class="ml-3.5 text-sm sm:text-base text-slate-200 group-hover:text-white font-medium">${opt.text}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function handleNextCarree() {
+            const q = questionsMatriceCarree[indexCarree];
+            const selectedInputs = Array.from(document.querySelectorAll('input[name="input_carree"]:checked'));
+            if (selectedInputs.length === 0) {
+                showNotification("Sélectionne au moins une réponse.");
+                return;
+            }
+
+            let nextJumpId = null;
+            selectedInputs.forEach(inp => {
+                const optIndex = parseInt(inp.value, 10);
+                const chosen = q.options[optIndex];
+                if (chosen.type && scoresCarree[chosen.type] !== undefined) {
+                    scoresCarree[chosen.type] += chosen.points;
+                }
+                if (chosen.nextId) {
+                    nextJumpId = chosen.nextId;
+                }
+            });
+
+            if (nextJumpId) {
+                indexCarree = questionsMatriceCarree.findIndex(item => item.id === nextJumpId);
+            } else {
+                indexCarree++;
+            }
+
+            renderQuestionCarree();
+        }
+
+        function evaluateCarreeOutcome() {
+            let norm = scoresCarree.norm || 0;
+            let sup = scoresCarree.sup || 0;
+            let inf = scoresCarree.inf || 0;
+
+            let classement = [
+                { type: "Normale", val: norm },
+                { type: "Supérieure", val: sup },
+                { type: "Inférieure", val: inf }
+            ];
+            classement.sort((a, b) => b.val - a.val);
+
+            let premier = classement[0];
+            let deuxieme = classement[1];
+            let dernier = classement[2];
+
+            if ((premier.val - deuxieme.val) <= 2 || (premier.val - dernier.val) <= 6) {
+                currentPhase = "diagElem";
+                indexDiagElem = 0;
+                scoresDiagElem = { diag: 0, elem: 0 };
+                renderQuestionDiagElem();
+                return;
+            }
+
+            if (sup > 12 || inf > 12) {
+                renderFinalScreen("qcq_standard");
+                return;
+            }
+
+            if (premier.type === "Normale") {
+                currentPhase = "diagElem";
+                indexDiagElem = 0;
+                scoresDiagElem = { diag: 0, elem: 0 };
+                renderQuestionDiagElem();
+            } else if (premier.type === "Supérieure") {
+                acquiredMatrix = { key: "triangulaire_sup", category: "carree", typeName: "Matrice Triangulaire Supérieure", formatCode: "X × X" };
+                renderFinalScreen("triangulaire_sup");
+            } else {
+                acquiredMatrix = { key: "triangulaire_inf", category: "carree", typeName: "Matrice Triangulaire Inférieure", formatCode: "X × X" };
+                renderFinalScreen("triangulaire_inf");
+            }
+        }
+
+        function renderQuestionDiagElem() {
+            if (indexDiagElem >= questionsDiagonalElementaire.length) {
+                evaluateDiagElemOutcome();
+                return;
+            }
+
+            const q = questionsDiagonalElementaire[indexDiagElem];
+            document.getElementById('current-step-num').textContent = "Suite " + (indexDiagElem + 1) + "/5";
+            document.getElementById('progress-bar').style.width = Math.round(((indexDiagElem + 1) / 5) * 100) + '%';
+            document.getElementById('question-text').textContent = q.text;
+            document.getElementById('question-hint').classList.add('hidden');
+            document.getElementById('prev-btn').disabled = true;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 cursor-pointer transition-all duration-150 group select-none";
+                label.innerHTML = `
+                    <input type="radio" name="input_diag" value="${idx}" class="w-4 h-4 text-indigo-600 bg-slate-900">
+                    <span class="ml-3.5 text-sm sm:text-base text-slate-200 group-hover:text-white font-medium">${opt.text}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function handleNextDiagElem() {
+            const selected = document.querySelector('input[name="input_diag"]:checked');
+            if (!selected) {
+                showNotification("Sélectionne une réponse.");
+                return;
+            }
+
+            const optIndex = parseInt(selected.value, 10);
+            const q = questionsDiagonalElementaire[indexDiagElem];
+            const chosen = q.options[optIndex];
+
+            if (chosen.type && scoresDiagElem[chosen.type] !== undefined) {
+                scoresDiagElem[chosen.type] += chosen.points;
+            }
+
+            indexDiagElem++;
+            renderQuestionDiagElem();
+        }
+
+        function evaluateDiagElemOutcome() {
+            let diag = scoresDiagElem.diag || 0;
+            let elem = scoresDiagElem.elem || 0;
+
+            if (Math.abs(diag - elem) < 5) {
+                acquiredMatrix = { key: "carree_quelconque", category: "carree", typeName: "Matrice Carrée Quelconque", formatCode: "X × X" };
+                renderFinalScreen("qcq_apres_carree");
+            } else if (diag >= elem) {
+                acquiredMatrix = { key: "diagonale", category: "carree", typeName: "Matrice Diagonale", formatCode: "X × X" };
+                renderFinalScreen("diagonale");
+            } else {
+                acquiredMatrix = { key: "elementaire", category: "carree", typeName: "Matrice Carrée Élémentaire", formatCode: "X × X" };
+                renderFinalScreen("elementaire");
+            }
+        }
+
+        // --- BRANCHE MATRICE QUELCONQUE (16 QUESTIONS) ---
+        function startVraieBrancheQuelconque() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('matrix-visual-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('progress-indicator').classList.remove('hidden');
+
+            currentPhase = "quelconque";
+            vrqIndex = 0;
+            vrqScoreH = 0;
+            vrqScoreL = 0;
+            vrqForceCol = false;
+            renderVrqQuestion();
+        }
+
+        function renderVrqQuestion() {
+            if (vrqIndex >= vraieBaseQuelconque.length) {
+                evaluateVrqOutcome();
+                return;
+            }
+
+            const q = vraieBaseQuelconque[vrqIndex];
+            document.getElementById('current-step-num').textContent = "Quelconque " + (vrqIndex + 1) + "/" + vraieBaseQuelconque.length;
+            document.getElementById('progress-bar').style.width = Math.round(((vrqIndex + 1) / vraieBaseQuelconque.length) * 100) + '%';
+            document.getElementById('question-text').textContent = q.text;
+            
+            const hintEl = document.getElementById('question-hint');
+            if (q.type === "multiple") hintEl.classList.remove('hidden');
+            else hintEl.classList.add('hidden');
+            
+            document.getElementById('prev-btn').disabled = true;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
+
+            q.options.forEach((opt, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 cursor-pointer transition-all duration-150 group select-none";
+                label.innerHTML = `
+                    <input type="${inputType}" name="vrq_opt" value="${idx}" class="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700">
+                    <span class="ml-3.5 text-sm sm:text-base text-slate-200 group-hover:text-white font-medium">${opt.label}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function handleNextQuelconque() {
+            const q = vraieBaseQuelconque[vrqIndex];
+            const checked = Array.from(document.querySelectorAll('input[name="vrq_opt"]:checked'));
+            if (checked.length === 0) {
+                showNotification("Sélectionne au moins une réponse !");
+                return;
+            }
+
+            checked.forEach(input => {
+                const chosen = q.options[parseInt(input.value, 10)];
+                vrqScoreH += (chosen.H || 0);
+                vrqScoreL += (chosen.L || 0);
+                if (chosen.forceColonne) vrqForceCol = true;
+            });
+
+            vrqIndex++;
+            renderVrqQuestion();
+        }
+
+        function evaluateVrqOutcome() {
+            const ecart = Math.abs(vrqScoreH - vrqScoreL);
+            const majoriteH = vrqScoreH >= vrqScoreL;
+
+            // 1. Colonne forcée (Q7)
+            if (vrqForceCol) {
+                acquiredMatrix = { key: "colonne", category: "quelconque", typeName: "Matrice Colonne", formatCode: "X × 1" };
+                showOutcomeWithDimensionButton("Tu es une Matrice Colonne", "On peut dire que t'es un/une sacré(e) aura farmer toi. Tout le monde te respect ... attends .. en fait nan tout le monde a peur de toi :/ \nInvestis sur le capital émotionnel mon ami, trop de prestance tue la prestance. \nSont aussi des matrices colonnes : Hitler, le piment, les payements refusés.");
+                return;
+            }
+
+            // 2. Redirection vers les Matrices Carrées si écart <= 1
+            if (ecart <= 1) {
+                showCustomRedirectScreen(
+                    "Tu es finalement une Matrice Carrée",
+                    "Hop hop hop tu crois aller où comme ça ? Toi quelconque ? Tu crois tromper qui comme ça ? C'est n'importe quoi, t'es une belle matrice carré toi. Aller, file dans le test des carrés.",
+                    "Continuer vers le test des carrés →",
+                    "startCarreeBranch()"
+                );
+                return;
+            }
+
+            // 3. Écart >= 12 : Colonne ou Ligne
+            if (ecart >= 12) {
+                if (majoriteH) {
+                    acquiredMatrix = { key: "colonne", category: "quelconque", typeName: "Matrice Colonne", formatCode: "X × 1" };
+                    showOutcomeWithDimensionButton("Tu es une Matrice Colonne", "On peut dire que t'es un/une sacré(e) aura farmer toi. Tout le monde te respect ... attends .. en fait nan tout le monde a peur de toi :/ \nInvestis sur le capital émotionnel mon ami, trop de prestance tue la prestance. \nSont aussi des matrices colonnes : Hitler, le piment.");
+                } else {
+                    acquiredMatrix = { key: "ligne", category: "quelconque", typeName: "Matrice Ligne", formatCode: "1 × X" };
+                    showOutcomeWithDimensionButton("Tu es une Matrice Ligne", "Trop mignon une matrice ligne ! T'es complètement invisible aux yeux des autres mais dès qu'on apprend à te connaître, tu t'avère être super deep comme personne. Essaye de parler un peu plus quand même chef.\nAussi les matrices colonnes te terrifient et jte comprends. \nSont aussi des matrices lignes : Robin Williams, pas d'autre idées là c'est trop niche pour mes compétences");
+                }
+                return;
+            }
+
+            // 4. Écart 10 ou 11 : 4X par X ou X par 4X
+            if (ecart >= 10 && ecart <= 11) {
+                if (majoriteH) {
+                    acquiredMatrix = { key: "qcq_4x_x", category: "quelconque", typeName: "Matrice Quelconque en 4X par X", formatCode: "4X × X" };
+                    showOutcomeWithDimensionButton("Tu es une Matrice Quelconque en 4X par X", "La prestance sociale ça te connaît, t'es pas n'importe qui mon gars. Mais malgrès tout, t'es pas aussi benêt qu'on pourrait penser, y'a bien un petit (oui petit n'abusons pas) coeur derrière toute cette aura. \nAussi les matrices colonnes te terrifient mais tu fais belek pour ta survie. \nSont aussi des matrices 4X par X : le jus de fruit, Han Solo (oe jsp pas d'idées sur celui-là).");
+                } else {
+                    acquiredMatrix = { key: "qcq_x_4x", category: "quelconque", typeName: "Matrice Quelconque en X par 4X", formatCode: "X × 4X" };
+                    showOutcomeWithDimensionButton("Tu es une Matrice Quelconque en X par 4X", "Dès que tu sors de ton groupe de pote, c'est la jungle, c'est une terre inconnue pour toi. Si seulement les gens savaient à quel point tu peux être intéressant, quel potentiel gâché... \nSont aussi des matrices X par 4X : eh jsp frr.");
+                }
+                return;
+            }
+
+            // 5. Écart 7 à 9 : 3X par X ou X par 3X
+            if (ecart >= 7 && ecart <= 9) {
+                if (majoriteH) {
+                    acquiredMatrix = { key: "qcq_3x_x", category: "quelconque", typeName: "Matrice Quelconque en 3X par X", formatCode: "3X × X" };
+                    showOutcomeWithDimensionButton("Tu es une Matrice Quelconque en 3X par X", "T'es là aux before, aux soirées, aux after, aux after des after bref t'es présent, t'es un peu pote avec tout le monde. Mais au delà des cubis de rosé descendus, t'es quand même quelqu'un d'intéressant quand on apprend à te connaître. \nT'évite quand même les matrices colonnes, t'as pas envie d'être connu au point de pactiser. \nEst aussi une matrice 3X par X : Le cabillaud.");
+                } else {
+                    acquiredMatrix = { key: "qcq_x_3x", category: "quelconque", typeName: "Matrice Quelconque en X par 3X", formatCode: "X × 3X" };
+                    showOutcomeWithDimensionButton("Tu es une Matrice Quelconque en X par 3X", "T'es ce mec un peu marrant, sympatoche, viteuf sociable. Mais quand ya un pépin pour un de tes potes, c'est toi qu'on vient voir pour en parler. \nEst aussi une matrice X par 3X : le cannabis.");
+                }
+                return;
+            }
+
+            // 6. Écart 4 à 6 : 2X par X ou X par 2X
+            if (ecart >= 4 && ecart <= 6) {
+                if (majoriteH) {
+                    acquiredMatrix = { key: "qcq_2x_x", category: "quelconque", typeName: "Matrice Quelconque en 2X par X", formatCode: "2X × X" };
+                    showOutcomeWithDimensionButton("Tu es une Matrice Quelconque en 2X par X", "Tel le fromage blanc, parfait compromis entre le yaourt et le fromage, tu es le parfait compromis entre les spotlight et la sagesse. \nHeureusement que ton fromage blanc est saupoudré d'aisance sociale, autrement t'aurais finis dans les tréfonds des matrices carrées. \nSont aussi des matrices 2X par X : le compté, Khalamite.");
+                } else {
+                    acquiredMatrix = { key: "qcq_x_2x", category: "quelconque", typeName: "Matrice Quelconque en X par 2X", formatCode: "X × 2X" };
+                    showOutcomeWithDimensionButton("Tu es une Matrice Quelconque en X par 2X", "Tel le fromage blanc, parfait compromis entre le yaourt et le fromage, tu es le parfait compromis entre les spotlight et la sagesse. \nHeureusement que ton fromage blanc est saupoudré de gentillesse, autrement t'aurais finis dans les tréfonds des matrices carrées. \nSont aussi des matrices X par 2X : les gervita, Zidane.");
+                }
+                return;
+            }
+
+            // 7. Écart 2 ou 3 : Critère (X + 1) par X ou X par (X + 1)
+            if (majoriteH) {
+                acquiredMatrix = { key: "qcq_xp1_x", category: "quelconque", typeName: "Matrice Quelconque en (X + 1) par X", formatCode: "(X + 1) × X" };
+                showOutcomeWithDimensionButton("Tu es une Matrice Quelconque en (X + 1) par X", "On pourrait argumenter que t'es une matrice carrée, mais ta capacité à être socialement présent t'as fait passer de justesse chez les matrices quelconques. T'es un peu aux autres matrices quelconques ce que le l'emmental rappé est au fromage. Finalement t'es sûrement quelqu'un de très chill, et on t'en demande pas plus. \nSont aussi des matrices (X + 1) par X : eh jsp frr");
+            } else {
+                acquiredMatrix = { key: "qcq_x_xp1", category: "quelconque", typeName: "Matrice Quelconque en X par (X + 1)", formatCode: "X × (X + 1)" };
+                showOutcomeWithDimensionButton("Tu es une Matrice Quelconque en X par (X + 1)", "On pourrait argumenter que t'es une matrice carrée, mais ta capacité à être de plutôt bon conseils t'as fait passer de justesse chez les matrices quelconques. T'es un peu aux autres matrices quelconques ce que le l'emmental rappé est au fromage. Finalement t'es sûrement quelqu'un de très chill, et on t'en demande pas plus. \nSont aussi des matrices X par (X + 1) : eh jsp frr");
+            }
+        }
+
+        // --- 9. GESTION DES ÉCRANS INTERMÉDIAIRES ET DE RÉSULTATS ---
+        function renderFinalScreen(screenType) {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('progress-indicator').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            const statsContainer = document.getElementById('stats-container');
+            const buttonsContainer = document.getElementById('result-buttons');
+            const matrixContainer = document.getElementById('matrix-visual-container');
+            const badgeEl = document.getElementById('result-badge');
+            const titleEl = document.getElementById('result-title');
+            const descEl = document.getElementById('result-desc');
+            const iconEl = document.getElementById('result-icon');
+
+            statsContainer.classList.add('hidden');
+            matrixContainer.classList.add('hidden');
+
+            const dimensionConvergenceButtons = `
+                <button onclick="showDimensionIntroScreen()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all">
+                    Déterminer ma dimension (grand X) →
+                </button>
+                <button onclick="restartQuiz()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-2xl transition-all">
+                    Recommencer
+                </button>
+            `;
+
+            if (screenType === "qcq_pieds") {
+                badgeEl.textContent = "Première étape terminée";
+                iconEl.textContent = "🦶";
+                titleEl.textContent = "Matrice Quelconque 🔺";
+                descEl.textContent = "T'es un énorme kiffeur et c'est tout à ton honneur. Profite de ta liberté (avec le consentement de la personne dont tu suces les pieds) jeune matrice quelconque.";
+                statsContainer.classList.remove('hidden');
+                document.getElementById('score-carre-val').textContent = currentState.carre;
+                document.getElementById('score-triangle-val').textContent = currentState.triangle;
+
+                buttonsContainer.innerHTML = `
+                    <button onclick="startVraieBrancheQuelconque()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all">
+                        Continuer le test →
+                    </button>
+                    <button onclick="restartQuiz()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-2xl transition-all">
+                        Recommencer
+                    </button>
+                `;
+
+            } else if (screenType === "qcq_standard") {
+                badgeEl.textContent = "Première étape terminée";
+                iconEl.textContent = "🌀";
+                titleEl.textContent = "Matrice Quelconque 🔺";
+                descEl.textContent = "T'es complètement hors norme, mais prends pas la grosse tête non plus le test est pas fini, tu pourrais bien être une vieille matrice colonne qui pue... \nSont aussi des matrices quelconques : Gattouz et La Fève.";
+                statsContainer.classList.remove('hidden');
+                document.getElementById('score-carre-val').textContent = currentState.carre;
+                document.getElementById('score-triangle-val').textContent = currentState.triangle;
+
+                buttonsContainer.innerHTML = `
+                    <button onclick="startVraieBrancheQuelconque()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all">
+                        Continuer le test →
+                    </button>
+                    <button onclick="restartQuiz()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-2xl transition-all">
+                        Recommencer
+                    </button>
+                `;
+
+            } else if (screenType === "carree_intermediaire") {
+                badgeEl.textContent = "Première étape terminée";
+                iconEl.textContent = "🔲";
+                titleEl.textContent = "Matrice Carrée 🔲";
+                descEl.textContent = "T'es plutôt un classic burger (en tout cas au premier regard...), et c'est très bien comme ça. \nMais ne t'en fais pas jeune matrice, le test est loin d'être fini, tu pourrais être bien plus spécial que tu ne le penses.";
+                statsContainer.classList.remove('hidden');
+                document.getElementById('score-carre-val').textContent = currentState.carre;
+                document.getElementById('score-triangle-val').textContent = currentState.triangle;
+
+                buttonsContainer.innerHTML = `
+                    <button onclick="startCarreeBranch()" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-600/30 transition-all">
+                        Continuer le test →
+                    </button>
+                    <button onclick="restartQuiz()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-2xl transition-all">
+                        Recommencer
+                    </button>
+                `;
+
+            } else if (screenType === "diagonale") {
+                badgeEl.textContent = "Type de matrice identifié";
+                iconEl.textContent = "⚡";
+                titleEl.textContent = "Tu es une Matrice Diagonale";
+                descEl.textContent = "T'es carrément droit dans tes bottes, on pourrait te qualifier de normal, et c'est très bien comme ça. Si le monde avait plus de gens comme toi, tout irait pour le mieux. On raconte même que pas une matrice diagonale ne s'est déjà embrouillé avec quelqu'un. \nSont des matrices diagonales : Le pain, Pierre Niney";
+                buttonsContainer.innerHTML = dimensionConvergenceButtons;
+
+            } else if (screenType === "elementaire") {
+                badgeEl.textContent = "Type de matrice identifié";
+                iconEl.textContent = "🔥";
+                titleEl.textContent = "Tu es une Matrice Carrée Élémentaire";
+                descEl.textContent = "Toi t'es un sacré spécimen, t'as pas de ligne directrice t'as un point directeur. Solide sur ton appui (peut être même un peu trop), la légende raconte même que si on rassemble toutes les matrices élémentaires du monde, on pourrait créer n'importe quel individu... \nEst une matrice élémentaire : Le sel";
+                buttonsContainer.innerHTML = dimensionConvergenceButtons;
+
+            } else if (screenType === "triangulaire_sup") {
+                badgeEl.textContent = "Type de matrice identifié";
+                iconEl.textContent = "📐";
+                titleEl.textContent = "Tu es une Matrice Triangulaire Supérieure";
+                descEl.textContent = "T'es un(e) gars/meuf chill, sympatoche, bref tel le morceau de chocolat au bout des cornets de glace tu nous suprends pas mais ça fait toujours plaisir de te voir. \nPrends garde à ta homonyme maléfique la matrice triangulaire inférieure. \nSont des matrices triangulaires sup : Keanu Reeves, l'emoji 👌";
+                buttonsContainer.innerHTML = dimensionConvergenceButtons;
+
+            } else if (screenType === "triangulaire_inf") {
+                badgeEl.textContent = "Type de matrice identifié";
+                iconEl.textContent = "🔻";
+                titleEl.textContent = "Tu es une Matrice Triangulaire Inférieure";
+                descEl.textContent = "Tel le loup déguisé en mouton, t'as peut être l'air normal, mais au fond t'es un gros secoué du bocal. \nATTENTION LE LOUP EST RENTRÉ DANS LA BERGERIE AOUUU 🐺🐺. \nSont des matrices triangulaires inf : P-Diddy ; Epstein ; Stephen Hawking";
+                buttonsContainer.innerHTML = dimensionConvergenceButtons;
+
+            } else if (screenType === "qcq_apres_carree") {
+                badgeEl.textContent = "Type de matrice identifié";
+                iconEl.textContent = "🌀";
+                titleEl.textContent = "Matrice Carrée Quelconque 🔺";
+                descEl.textContent = "Difficile de te mettre dans une case, donc t'en as pas. Tu crées ta propre case yeeha 🤙. \nAttention, tout peut encore basculer, la matrice nulle te regarde avec un œil malicieux...";
+                buttonsContainer.innerHTML = dimensionConvergenceButtons;
+            }
+        }
+
+        function showOutcomeWithDimensionButton(title, desc) {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('progress-indicator').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('stats-container').classList.add('hidden');
+            document.getElementById('matrix-visual-container').classList.add('hidden');
+            document.getElementById('result-badge').textContent = "Format de matrice identifié";
+            document.getElementById('result-icon').textContent = "📐";
+            document.getElementById('result-title').textContent = title;
+            document.getElementById('result-desc').textContent = desc;
+
+            document.getElementById('result-buttons').innerHTML = `
+                <button onclick="showDimensionIntroScreen()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all">
+                    Déterminer ma dimension (grand X) →
+                </button>
+                <button onclick="restartQuiz()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-2xl transition-all">
+                    Recommencer
+                </button>
+            `;
+        }
+
+        function showCustomRedirectScreen(title, desc, buttonText, buttonAction) {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('progress-indicator').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('stats-container').classList.add('hidden');
+            document.getElementById('matrix-visual-container').classList.add('hidden');
+            document.getElementById('result-badge').textContent = "Réorientation matricielle";
+            document.getElementById('result-icon').textContent = "🔄";
+            document.getElementById('result-title').textContent = title;
+            document.getElementById('result-desc').textContent = desc;
+
+            document.getElementById('result-buttons').innerHTML = `
+                <button onclick="${buttonAction}" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-600/30 transition-all">
+                    ${buttonText}
+                </button>
+                <button onclick="restartQuiz()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-2xl transition-all">
+                    Recommencer
+                </button>
+            `;
+        }
+
+        // --- 10. ÉCRAN INTERMÉDIAIRE & QUESTIONNAIRE COMMUN DE DIMENSION (GRAND X) ---
+        function showDimensionIntroScreen() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('progress-indicator').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('stats-container').classList.add('hidden');
+            document.getElementById('matrix-visual-container').classList.add('hidden');
+            document.getElementById('result-badge').textContent = "Dernière ligne droite";
+            document.getElementById('result-icon').textContent = "🧭";
+            document.getElementById('result-title').textContent = "Petit warning";
+            document.getElementById('result-desc').textContent = "Plus que 10 questions pour finir de déterminer ta forme exacte, c'est presque fini tqt. Précision importante : les 10 dernières questions sont plus axées sur le physique, y'aura ptet des trucs indiscrets (yen aura), donc si tu veux pas répondre, normalement ya une réponse que tu peux sélectionner pour ça. Evidemment, rien de bizarre du tout c'est juste pour la vanne, le but c'est juste de faire un truc goofy pas de mettre mal à l'aise. De tt façon si y'a des trucs que tu trouves trop chaud viens me le dire. Aussi, aucune réponse est enregistrée (et de tt façon j'aurais pas eu les compétences informatiques pour aller les chercher). Gros bisous ";
+
+            document.getElementById('result-buttons').innerHTML = `
+                <button onclick="startDimensionTest()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all">
+                    Lancer les 10 dernières questions →
+                </button>
+                <button onclick="restartQuiz()" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-2xl transition-all">
+                    Recommencer
+                </button>
+            `;
+        }
+
+        function startDimensionTest() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('matrix-visual-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('progress-indicator').classList.remove('hidden');
+
+            currentPhase = "dimension";
+            dimIndex = 0;
+            dimScoreT = 0;
+            dimScoreU = 0;
+            renderDimensionQuestion();
+        }
+
+        function renderDimensionQuestion() {
+            if (dimIndex >= questionsDimension.length) {
+                evaluateDimensionOutcome();
+                return;
+            }
+
+            const q = questionsDimension[dimIndex];
+            document.getElementById('current-step-num').textContent = "Dimension " + (dimIndex + 1) + "/" + questionsDimension.length;
+            document.getElementById('progress-bar').style.width = Math.round(((dimIndex + 1) / questionsDimension.length) * 100) + '%';
+            document.getElementById('question-text').textContent = q.text;
+
+            const hintEl = document.getElementById('question-hint');
+            if (q.type === "multiple") hintEl.classList.remove('hidden');
+            else hintEl.classList.add('hidden');
+
+            document.getElementById('prev-btn').disabled = true;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
+
+            q.options.forEach((opt, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 cursor-pointer transition-all duration-150 group select-none";
+                label.innerHTML = `
+                    <input type="${inputType}" name="dim_opt" value="${idx}" class="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700">
+                    <span class="ml-3.5 text-sm sm:text-base text-slate-200 group-hover:text-white font-medium">${opt.label}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function handleNextDimension() {
+            const q = questionsDimension[dimIndex];
+            const checked = Array.from(document.querySelectorAll('input[name="dim_opt"]:checked'));
+            if (checked.length === 0) {
+                showNotification("Sélectionne au moins une réponse !");
+                return;
+            }
+
+            checked.forEach(input => {
+                const chosen = q.options[parseInt(input.value, 10)];
+                dimScoreT += (chosen.T || 0);
+                dimScoreU += (chosen.U || 0);
+            });
+
+            dimIndex++;
+            renderDimensionQuestion();
+        }
+
+        function computeGrandX(T, U) {
+            if (T === 0 && U === 0) {
+                return 2;
+            }
+            const diff = T - U;
+            if (U >= T) {
+                return 1;
+            }
+            if (diff >= 1 && diff <= 6) {
+                return 3;
+            }
+            if (diff >= 7 && diff <= 10) {
+                return 4;
+            }
+            return 5;
+        }
+
+        function evaluateDimensionOutcome() {
+            let grandX = computeGrandX(dimScoreT, dimScoreU);
+            const matrixKey = acquiredMatrix.key || "carree_quelconque";
+
+            // Pour toute matrice issue de la branche quelconque (colonne, ligne, ou rectangulaire qcq_*), si X = 1 alors on force X = 2
+            const nonSquareKeys = [
+                "colonne",
+                "ligne",
+                "qcq_4x_x",
+                "qcq_x_4x",
+                "qcq_3x_x",
+                "qcq_x_3x",
+                "qcq_2x_x",
+                "qcq_x_2x",
+                "qcq_xp1_x",
+                "qcq_x_xp1"
+            ];
+            if (nonSquareKeys.includes(matrixKey) && grandX === 1) {
+                grandX = 2;
+            }
+
+            const resultId = `${matrixKey}_X${grandX}`;
+            finalDimensionProfile = catalogue75Resultats[resultId];
+
+            // Enchaîne directement vers le test du quantificateur V (coefficients fixes vs variables)
+            startCoeffVTest();
+        }
+
+        // --- 11. TEST COEFFICIENTS FIXES VS VARIABLES (QUANTIFICATEUR V — 12 QUESTIONS) ---
+        function startCoeffVTest() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('matrix-visual-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('progress-indicator').classList.remove('hidden');
+
+            currentPhase = "coeffV";
+            coeffVIndex = 0;
+            coeffVScore = 0;
+            renderCoeffVQuestion();
+        }
+
+        function renderCoeffVQuestion() {
+            if (coeffVIndex >= questionsCoeffV.length) {
+                startZonesABCTest();
+                return;
+            }
+
+            const q = questionsCoeffV[coeffVIndex];
+            document.getElementById('current-step-num').textContent = "Coefficients " + (coeffVIndex + 1) + "/" + questionsCoeffV.length;
+            document.getElementById('progress-bar').style.width = Math.round(((coeffVIndex + 1) / questionsCoeffV.length) * 100) + '%';
+            document.getElementById('question-text').textContent = q.text;
+
+            const hintEl = document.getElementById('question-hint');
+            if (q.type === "multiple") hintEl.classList.remove('hidden');
+            else hintEl.classList.add('hidden');
+
+            document.getElementById('prev-btn').disabled = true;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
+
+            q.options.forEach((opt, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 cursor-pointer transition-all duration-150 group select-none";
+                label.innerHTML = `
+                    <input type="${inputType}" name="coeffv_opt" value="${idx}" class="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700">
+                    <span class="ml-3.5 text-sm sm:text-base text-slate-200 group-hover:text-white font-medium">${opt.label}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function handleNextCoeffV() {
+            const q = questionsCoeffV[coeffVIndex];
+            const checked = Array.from(document.querySelectorAll('input[name="coeffv_opt"]:checked'));
+            if (checked.length === 0) {
+                showNotification("Sélectionne au moins une réponse !");
+                return;
+            }
+
+            checked.forEach(input => {
+                const chosen = q.options[parseInt(input.value, 10)];
+                coeffVScore += (chosen.V || 0);
+            });
+
+            coeffVIndex++;
+            renderCoeffVQuestion();
+        }
+
+        // --- 12. TEST COMMUN DES ZONES A, B, C (13 QUESTIONS) ---
+        function startZonesABCTest() {
+            currentPhase = "zonesABC";
+            zonesIndex = 0;
+            scoresZones = { A: 0, B: 0, C: 0 };
+            renderZonesABCQuestion();
+        }
+
+        function renderZonesABCQuestion() {
+            if (zonesIndex >= questionsZonesABC.length) {
+                renderUltimateMatrixScreen();
+                return;
+            }
+
+            const q = questionsZonesABC[zonesIndex];
+            document.getElementById('current-step-num').textContent = "Zones " + (zonesIndex + 1) + "/" + questionsZonesABC.length;
+            document.getElementById('progress-bar').style.width = Math.round(((zonesIndex + 1) / questionsZonesABC.length) * 100) + '%';
+            document.getElementById('question-text').textContent = q.text;
+
+            const hintEl = document.getElementById('question-hint');
+            if (q.type === "multiple") hintEl.classList.remove('hidden');
+            else hintEl.classList.add('hidden');
+
+            document.getElementById('prev-btn').disabled = true;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const inputType = q.type === 'multiple' ? 'checkbox' : 'radio';
+
+            q.options.forEach((opt, idx) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center p-4 rounded-2xl bg-slate-950/50 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 cursor-pointer transition-all duration-150 group select-none";
+                label.innerHTML = `
+                    <input type="${inputType}" name="zones_opt" value="${idx}" class="w-4 h-4 text-indigo-600 bg-slate-900 border-slate-700">
+                    <span class="ml-3.5 text-sm sm:text-base text-slate-200 group-hover:text-white font-medium">${opt.label}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function handleNextZonesABC() {
+            const q = questionsZonesABC[zonesIndex];
+            const checked = Array.from(document.querySelectorAll('input[name="zones_opt"]:checked'));
+            if (checked.length === 0) {
+                showNotification("Sélectionne au moins une réponse !");
+                return;
+            }
+
+            checked.forEach(input => {
+                const chosen = q.options[parseInt(input.value, 10)];
+                if (chosen.zone && scoresZones[chosen.zone] !== undefined) {
+                    scoresZones[chosen.zone] += (chosen.points || 0);
+                }
+            });
+
+            zonesIndex++;
+            renderZonesABCQuestion();
+        }
+
+        // --- 13. CONSTRUCTION ALÉATOIRE ET RENDU VISUEL DE LA MATRICE FINALE ---
+
+        function getRequestedVarsPerZone(V) {
+            if (V <= SEUILS_QUANTIFICATEUR_V.seuil0VarMax) return 0;
+            if (V <= SEUILS_QUANTIFICATEUR_V.seuil1VarMax) return 1;
+            if (V <= SEUILS_QUANTIFICATEUR_V.seuil2VarMax) return 2;
+            return 3;
+        }
+
+        function generateNaturalCoefficientsForMean(count, targetMean) {
+            if (count <= 0) return [];
+            const mean = Math.max(0, Math.round(targetMean));
+            const totalSum = count * mean;
+            if (count === 1) return [totalSum];
+            if (totalSum === 0) return new Array(count).fill(0);
+
+            const values = new Array(count).fill(mean);
+            const spread = Math.max(1, Math.min(mean, Math.ceil(mean * 0.6)));
+            const iterations = count * 4;
+
+            for (let step = 0; step < iterations; step++) {
+                const i = Math.floor(Math.random() * count);
+                let j = Math.floor(Math.random() * count);
+                if (i === j) j = (i + 1) % count;
+
+                const delta = 1 + Math.floor(Math.random() * spread);
+                if (values[i] >= delta && values[j] + delta <= mean * 2 + 4) {
+                    values[i] -= delta;
+                    values[j] += delta;
+                }
+            }
+
+            for (let k = values.length - 1; k > 0; k--) {
+                const r = Math.floor(Math.random() * (k + 1));
+                [values[k], values[r]] = [values[r], values[k]];
+            }
+            return values;
+        }
+
+        function shuffleArray(arr) {
+            const copy = arr.slice();
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        function buildPersonalizedMatrix(profile, V, zoneMeans) {
+            const rows = profile.rows;
+            const cols = profile.cols;
+            const matrixKey = profile.matrixKey || "carree_quelconque";
+            const requestedVarsPerZone = getRequestedVarsPerZone(V);
+
+            const meanA = Math.max(0, Math.round(zoneMeans.A || 0));
+            const meanB = Math.max(0, Math.round(zoneMeans.B || 0));
+            const meanC = Math.max(0, Math.round(zoneMeans.C || 0));
+            const meanD = Math.abs(meanA - meanC);
+
+            // Initialiser toute la matrice avec des 0 par défaut
+            const matrix = Array.from({ length: rows }, () =>
+                Array.from({ length: cols }, () => ({ isVar: false, text: "0" }))
+            );
+
+            const zonesCells = { A: [], B: [], C: [], D: [] };
+            let activeMeans = {};
+
+            if (rows === 1 && cols === 1) {
+                zonesCells.B.push([0, 0]);
+                activeMeans = { B: meanB };
+            } else if (rows > 1 && cols === 1) {
+                const midRow = Math.floor(rows / 2);
+                for (let r = 0; r < rows; r++) {
+                    if (r < midRow) zonesCells.C.push([r, 0]);
+                    else zonesCells.A.push([r, 0]);
+                }
+                activeMeans = { A: meanA, C: meanC };
+            } else if (rows === 1 && cols > 1) {
+                const midCol = Math.floor(cols / 2);
+                for (let c = 0; c < cols; c++) {
+                    if (c < midCol) zonesCells.A.push([0, c]);
+                    else zonesCells.C.push([0, c]);
+                }
+                activeMeans = { A: meanA, C: meanC };
+            } else if (rows === cols) {
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (r > c) zonesCells.A.push([r, c]);
+                        else if (r === c) zonesCells.B.push([r, c]);
+                        else zonesCells.C.push([r, c]);
+                    }
+                }
+                activeMeans = { A: meanA, B: meanB, C: meanC };
+            } else {
+                const midRow = Math.floor(rows / 2);
+                const midCol = Math.floor(cols / 2);
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (r < midRow && c < midCol) zonesCells.B.push([r, c]);
+                        else if (r < midRow && c >= midCol) zonesCells.C.push([r, c]);
+                        else if (r >= midRow && c < midCol) zonesCells.A.push([r, c]);
+                        else zonesCells.D.push([r, c]);
+                    }
+                }
+                activeMeans = { A: meanA, B: meanB, C: meanC, D: meanD };
+            }
+
+            // Cas particulier : Matrice Carrée Élémentaire
+            // Zéros partout sauf 1 seule case aléatoire dans la zone ayant la plus grande moyenne
+            if (matrixKey === "elementaire") {
+                const candidateZones = Object.keys(activeMeans).filter(k => zonesCells[k] && zonesCells[k].length > 0);
+                let bestMean = -Infinity;
+                candidateZones.forEach(k => {
+                    if (activeMeans[k] > bestMean) bestMean = activeMeans[k];
+                });
+                const bestZones = candidateZones.filter(k => activeMeans[k] === bestMean);
+                const chosenZone = bestZones[Math.floor(Math.random() * bestZones.length)];
+                const targetCells = zonesCells[chosenZone];
+                const [er, ec] = targetCells[Math.floor(Math.random() * targetCells.length)];
+
+                if (requestedVarsPerZone >= 1) {
+                    matrix[er][ec] = { isVar: true, text: "x" };
+                    return {
+                        rows,
+                        cols,
+                        matrix,
+                        activeMeans,
+                        totalVariableCount: 1,
+                        requestedVarsPerZone
+                    };
+                } else {
+                    matrix[er][ec] = { isVar: false, text: String(bestMean) };
+                    return {
+                        rows,
+                        cols,
+                        matrix,
+                        activeMeans,
+                        totalVariableCount: 0,
+                        requestedVarsPerZone
+                    };
+                }
+            }
+
+            // Filtrage des zones autorisées selon la contrainte structurelle de la matrice
+            let allowedZones = ["B", "C", "A", "D"];
+            if (matrixKey === "diagonale") {
+                allowedZones = ["B"];
+            } else if (matrixKey === "triangulaire_sup") {
+                allowedZones = ["B", "C"];
+            } else if (matrixKey === "triangulaire_inf") {
+                allowedZones = ["B", "A"];
+            }
+
+            const varNames = ["x", "y", "z", "t", "u", "v", "w", "a", "b", "c", "d", "k"];
+            let varCursor = 0;
+            let totalVariableCount = 0;
+
+            allowedZones.forEach(zoneKey => {
+                const cells = zonesCells[zoneKey];
+                if (!cells || cells.length === 0) return;
+
+                const nbVarsInZone = Math.min(requestedVarsPerZone, cells.length);
+                const shuffledCells = shuffleArray(cells);
+                const varCells = shuffledCells.slice(0, nbVarsInZone);
+                const fixedCells = shuffledCells.slice(nbVarsInZone);
+
+                varCells.forEach(([r, c]) => {
+                    const label = varNames[varCursor % varNames.length] + (varCursor >= varNames.length ? Math.floor(varCursor / varNames.length) : "");
+                    varCursor++;
+                    totalVariableCount++;
+                    matrix[r][c] = { isVar: true, text: label };
+                });
+
+                const generatedValues = generateNaturalCoefficientsForMean(fixedCells.length, activeMeans[zoneKey]);
+                fixedCells.forEach(([r, c], idx) => {
+                    matrix[r][c] = { isVar: false, text: String(generatedValues[idx]) };
+                });
+            });
+
+            return {
+                rows,
+                cols,
+                matrix,
+                activeMeans,
+                totalVariableCount,
+                requestedVarsPerZone
+            };
+        }
+
+        function renderUltimateMatrixScreen() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('progress-indicator').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('stats-container').classList.add('hidden');
+
+            const finalProfile = finalDimensionProfile || catalogue75Resultats["carree_quelconque_X2"];
+
+            document.getElementById('result-badge').textContent = `Profil Final (${finalProfile.id})`;
+            document.getElementById('result-icon').textContent = finalProfile.icon;
+            document.getElementById('result-title').textContent = finalProfile.title;
+            document.getElementById('result-desc').textContent = finalProfile.description;
+
+            const built = buildPersonalizedMatrix(finalProfile, coeffVScore, scoresZones);
+            const matrixContainer = document.getElementById('matrix-visual-container');
+            const renderBox = document.getElementById('matrix-render-box');
+
+            let gridHtml = `<div class="matrix-wrapper"><div class="matrix-paren-left"></div><div class="grid gap-y-2.5 gap-x-5 font-mono text-lg sm:text-2xl font-semibold" style="grid-template-columns: repeat(${built.cols}, minmax(2.1rem, auto));">`;
+
+            for (let r = 0; r < built.rows; r++) {
+                for (let c = 0; c < built.cols; c++) {
+                    const cell = built.matrix[r][c];
+                    if (cell.isVar) {
+                        gridHtml += `<span class="text-amber-300 italic text-center px-1">${cell.text}</span>`;
+                    } else {
+                        gridHtml += `<span class="text-sky-100 text-center px-1">${cell.text}</span>`;
+                    }
+                }
+            }
+
+            gridHtml += `</div><div class="matrix-paren-right"></div></div>`;
+            renderBox.innerHTML = gridHtml;
+
+            matrixContainer.classList.remove('hidden');
+
+            document.getElementById('result-buttons').innerHTML = `
+                <button onclick="restartQuiz()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/30 transition-all">
+                    Recommencer tout le test
+                </button>
+            `;
+        }
+
+        function prevQuestion() {
+            if (currentPhase !== "trunk" || historyStack.length === 0) return;
+            const lastSnapshot = historyStack.pop();
+            currentQuestionId = lastSnapshot.questionId;
+            currentState = lastSnapshot.state;
+            renderQuestion();
+        }
+
+        function showNotification(msg) {
+            const existing = document.getElementById('toast-notif');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'toast-notif';
+            toast.className = "fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-indigo-500/40 text-white text-sm px-5 py-3 rounded-2xl shadow-2xl z-50 fade-in";
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+
+            setTimeout(() => { if (toast.parentElement) toast.remove(); }, 2500);
+        }
+
+        function restartQuiz() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('matrix-visual-container').classList.add('hidden');
+            document.getElementById('welcome-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
